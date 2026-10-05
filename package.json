@@ -1,0 +1,11 @@
+{
+  "name": "circuit-lab-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An educational electric circuits game MVP",
+  "scripts": {
+    "start": "npx serve .",
+    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs"
+  },
+  "type": "module"
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="بازی آموزشی مدارهای الکتریکی">
+  <title>آزمایشگاه مدار | Circuit Lab</title>
+  <link rel="stylesheet" href="styles.css?v=lesson-rebuild2">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">⚡</span><div><strong>آزمایشگاه مدار</strong><small>CIRCUIT LAB</small></div></div>
+      <div class="top-actions"><span class="progress-label" id="progressLabel">مرحله ۱ از ۱۳</span><button class="icon-button" id="soundButton" aria-label="صدا">🔊</button></div>
+    </header>
+
+    <main class="main-grid">
+      <section class="game-column">
+        <div class="mission-card">
+          <div><span class="eyebrow" id="levelEyebrow">مأموریت ۱ · مدار پایه</span><h1 id="levelTitle">اتاق را روشن کن</h1><p id="levelDescription">یک مسیر کامل از باتری تا لامپ بساز.</p></div>
+          <div class="score"><span>امتیاز</span><b id="scoreValue">۰</b></div>
+        </div>
+
+        <div class="circuit-stage" id="circuitStage">
+          <div class="stage-top"><span id="statusChip" class="status-chip off">مدار باز</span><span class="moves">حرکت: <b id="movesValue">۰</b></span></div>
+          <svg id="circuitSvg" viewBox="0 0 900 440" role="img" aria-label="مدار الکتریکی تعاملی"></svg>
+          <div id="levelControls"></div><div class="feedback" id="feedback"><span class="feedback-icon">💡</span><span id="feedbackText">برای شروع، اتصال‌های قرمز را کامل کن.</span></div>
+        </div><div class="circuit-legend"><b>راهنمای مدار</b><span><i class="legend-dot red"></i> اتصال ناقص</span><span><i class="legend-dot green"></i> اتصال کامل</span><span><i class="legend-line"></i> سیم فعال</span><span>روی کادر یا کلید کلیک کن</span></div><div class="controls-row"><button class="secondary-button" id="resetButton">↻ شروع دوباره</button><button class="primary-button" id="hintButton">راهنمایی بگیر <span>H</span></button><button class="next-button" id="nextButton" hidden>مرحلهٔ بعد ←</button></div>
+      </section>
+
+      <aside class="side-column">
+        <section class="panel lesson-panel"><div class="panel-title"><span>یادگیری این مرحله</span><span class="lesson-number" id="lessonNumber">۰۱</span></div><div id="lessonContent"></div></section>
+        <section class="panel level-panel"><div class="panel-title"><span>موضوعات و مراحل</span><span>۱۶ مرحله</span></div><div class="topic-tabs" id="topicTabs"></div><div class="level-list" id="levelList"></div></section>
+        <section class="panel formula-panel" id="formulaPanel"><div class="panel-title"><span>فرمول مهم</span><span class="formula-tag">قانون اهم</span></div><div class="formula">V = I × R</div><p>ولتاژ برابر است با جریان ضربدر مقاومت.</p></section>
+      </aside>
+    </main>
+    <footer><span>آموزش مدارهای الکتریکی · کارگاه و حل مسئله</span><span>کلید H برای راهنمایی · R برای شروع دوباره</span></footer>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="src/main.js?v=lesson-rebuild2"></script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {Board,missions} from '../src/builder/Board.js';
+import {CircuitBuilder} from '../src/builder/CircuitBuilder.js';
+const builder=Object.create(CircuitBuilder.prototype);
+const board=new Board();const a=board.add('battery',190,140),b=board.add('switch',425,140),c=board.add('lamp',660,140);
+board.connect(a.id+':0',b.id+':0');board.connect(b.id+':1',c.id+':0');board.connect(c.id+':1',a.id+':1');
+Object.assign(builder,{board,mission:missions[0],active:true,svg:{innerHTML:''},controls:{innerHTML:''},history:[],selected:null,selectedWire:null,pending:null,moves:0,result:{ok:true},onChange(){},message:''});
+const before=board.snapshot();
+builder.down({button:0,preventDefault(){},target:{closest(selector){return selector==='[data-wire]'?{dataset:{wire:'1'}}:null;}}});
+assert.equal(board.wires.length,3,'click selects, does not immediately delete');assert.equal(builder.selectedWire,1);assert.match(builder.svg.innerHTML,/#ffbc6a/);assert.match(builder.controls.innerHTML,/wireSelect/);assert.match(builder.controls.innerHTML,/value="1" selected/);
+builder.action('delete-wire');assert.equal(board.wires.length,2);assert.equal(builder.selectedWire,null);assert.equal(builder.result,null,'deletion invalidates the previous pass');
+builder.action('undo');assert.equal(board.snapshot(),before,'undo restores exact wire');assert.equal(builder.result,null);
+builder.action('delete-wire');assert.equal(board.wires.length,3,'no selection is a no-op');
+builder.load(missions[1]);assert.equal(builder.selectedWire,null);assert.equal(builder.board.wires.length,0);assert.equal(builder.result,null);
+console.log('PASS: wire selection and highlight, list selection markup, explicit deletion, result invalidation, undo and stage reset.');
