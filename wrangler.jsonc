@@ -1,0 +1,15 @@
+{
+  "name": "circuit-lab",
+  "compatibility_date": "2026-10-05",
+  "assets": {
+    "directory": ".",
+    "exclude": [
+      "node_modules",
+      ".git",
+      "tests",
+      "README.md",
+      "package.json",
+      "run.bat"
+    ]
+  }
+}
