@@ -9,9 +9,10 @@ export function assess(level,answers){
   for(const f of level.fields){
     const value=answers[f.key];
     if(f.options){if(!f.options.some(([id])=>id===value))missing.push(f.label);else if(value!==f.answer)wrong.push(f.label);}
-    else{const n=parseNumber(value);if(n===null)missing.push(f.label);else if(Math.abs(n-f.answer)>Math.max(0.002,Math.abs(f.answer)*0.005))wrong.push(f.label);}
+    else{const n=parseNumber(value);if(n===null)missing.push(f.label);else if(Math.abs(n-f.answer)>Math.max(0.002,Math.abs(f.answer)*0.0005))wrong.push(f.label);}
   }
   if(missing.length)return {ok:false,message:'پاسخ این بخش‌ها را وارد کن: '+missing.join('، ')};
   if(wrong.length)return {ok:false,message:'این پاسخ‌ها نیاز به بازبینی دارند: '+wrong.join('، ')+'. جهت فلش‌ها، علامت ولتاژ و واحدها را بررسی کن.'};
   return {ok:true,message:level.explanation};
 }
+
