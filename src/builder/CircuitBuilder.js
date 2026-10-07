@@ -13,7 +13,7 @@ export class CircuitBuilder {
     svg.addEventListener('drop',e=>{if(!this.active)return;e.preventDefault();const type=e.dataTransfer.getData('text/plain');if(names[type]){const p=this.point(e);this.add(type,p.x,p.y);}});
     controls.addEventListener('dragstart',e=>{const b=e.target.closest('[data-add]');if(this.active&&b)e.dataTransfer.setData('text/plain',b.dataset.add);});
     controls.addEventListener('click',e=>{if(!this.active)return;const b=e.target.closest('button');if(!b)return;if(b.dataset.add)this.add(b.dataset.add);else if(b.dataset.tool)this.action(b.dataset.tool);});
-    controls.addEventListener('change',e=>{if(!this.active)return;if(e.target.id==='wireSelect'){this.selectedWire=e.target.value===''?null:Number(e.target.value);this.selected=null;this.pending=null;this.render();return;}if(e.target.id!=='partResistance')return;this.save();const p=this.selectedPart();p.value=Number(e.target.value);this.changed();});
+    controls.addEventListener('change',e=>{if(!this.active)return;if(e.target.id.endsWith('wireSelect')){this.selectedWire=e.target.value===''?null:Number(e.target.value);this.selected=null;this.pending=null;this.render();return;}if(!e.target.id.endsWith('partResistance'))return;this.save();const p=this.selectedPart();p.value=Number(e.target.value);this.changed();});
     document.addEventListener('keydown',e=>{if(!this.active||['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='Escape'){this.pending=null;this.render();}if(e.key==='Delete')this.action(this.selectedWire!==null?'delete-wire':'delete');});
   }
   inlineAction(tool,id){
@@ -21,11 +21,11 @@ export class CircuitBuilder {
     this.selected=id;this.selectedWire=null;this.pending=null;
     if(tool==='battery-down'||tool==='battery-up'){
       const values=[3,6,9,12,18,24],index=Math.max(0,values.indexOf(p.value));
-      p.value=values[Math.max(0,Math.min(values.length-1,index+(tool.endsWith('up')?1:-1)))];this.save();this.changed();return;
+      this.save();p.value=values[Math.max(0,Math.min(values.length-1,index+(tool.endsWith('up')?1:-1)))];this.changed();return;
     }
     if(tool==='resistor-down'||tool==='resistor-up'){
       const values=[3,6,9,12,15,18,24,30],index=Math.max(0,values.indexOf(p.value));
-      p.value=values[Math.max(0,Math.min(values.length-1,index+(tool.endsWith('up')?1:-1)))];this.save();this.changed();return;
+      this.save();p.value=values[Math.max(0,Math.min(values.length-1,index+(tool.endsWith('up')?1:-1)))];this.changed();return;
     }
     this.action(tool);
   }
@@ -80,8 +80,9 @@ export class CircuitBuilder {
   renderSvg(){
     const pan=this.pan||{x:0,y:0},zoom=this.zoom||1;
     const ok=this.result?.ok;
+    const gridId=`${this.svg.id||'circuit'}-boardGrid`;
     const boardWidth=this.boardWidth||900,boardHeight=this.boardHeight||650;
-    let s=`<rect data-board-surface="true" width="${boardWidth}" height="${boardHeight}" rx="16" fill="url(#boardGrid)"/>`;
+    let s=`<rect data-board-surface="true" width="${boardWidth}" height="${boardHeight}" rx="16" fill="url(#${gridId})"/>`;
     if(!this.board.parts.length){const cx=boardWidth/2,cy=boardHeight/2-18;s+=`<text x="${cx}" y="${cy}" text-anchor="middle" fill="#acbed1" font-size="22">میز طراحی تو — قطعه‌ها را اینجا بچین</text><text x="${cx}" y="${cy+42}" text-anchor="middle" fill="#acbed1" font-size="16">کشیدن قطعه • اتصال پایانه‌ها • آزمایش مدار</text>`;}
     const used=new Set();
     this.board.wires.forEach(([a,b],i)=>{const d=wirePath(this.board,a,b,id=>this.terminal(id),used);s+=`<g data-wire="${i}" style="cursor:pointer"><title>انتخاب سیم؛ سپس حذف از فهرست یا با Delete</title><path d="${d}" fill="none" stroke="transparent" stroke-width="24" pointer-events="stroke"/><path d="${d}" fill="none" stroke="${this.selectedWire===i?'#ffbc6a':ok?'#64edbd':'#81bbf8'}" stroke-width="4"/></g>`;});
@@ -95,7 +96,7 @@ export class CircuitBuilder {
       if(this.selected===p.id)s+=this.inlineControls(p);
     }
     for(const p of this.board.parts)for(const end of [0,1]){const id=p.id+':'+end,at=this.terminal(id);s+=`<g data-pin="${id}" style="cursor:crosshair"><title>پایانهٔ ${end+1} ${names[p.type]}</title><circle cx="${at.x}" cy="${at.y}" r="17" fill="transparent"/><circle cx="${at.x}" cy="${at.y}" r="8" fill="${this.pending===id?'#ffd468':'#92d6ff'}" stroke="#102338" stroke-width="3"/></g>`;}
-    this.svg.innerHTML=`<defs><pattern id="boardGrid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#38516d"/></pattern></defs><g transform="translate(${pan.x} ${pan.y}) scale(${zoom})">${s}</g>`;
+    this.svg.innerHTML=`<defs><pattern id="${gridId}" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#38516d"/></pattern></defs><g transform="translate(${pan.x} ${pan.y}) scale(${zoom})">${s}</g>`;
   }
   inlineControls(p){
     const boardWidth=this.boardWidth||1200,boardHeight=this.boardHeight||800;
@@ -112,11 +113,11 @@ export class CircuitBuilder {
     return s;
   }
   renderControls(){
-    const zoom=this.zoom||1;
+    const prefix=this.svg.id?this.svg.id+'-':'';
     const p=this.selectedPart();
     const endpoint=id=>{const [part,end]=id.split(':');const item=this.board.parts.find(x=>x.id===part);return `${names[item.type]} ${part.slice(1)} / ${item.type==='battery'?(end==='0'?'+':'−'):Number(end)+1}`;};
-    const wireList=`<div class="wire-list"><label for="wireSelect">سیم‌های مدار (${this.board.wires.length}) — اگر کلیک روی سیم سخت است، از این فهرست انتخاب کن</label><select id="wireSelect"><option value="">یک سیم انتخاب کن…</option>${this.board.wires.map(([a,b],i)=>`<option value="${i}" ${this.selectedWire===i?'selected':''}>سیم ${i+1}: ${endpoint(a)} ↔ ${endpoint(b)}</option>`).join('')}</select><button type="button" data-tool="delete-wire" ${this.selectedWire===null?'disabled':''}>حذف سیم انتخاب‌شده</button></div>`;
-    this.controls.innerHTML=`<div class="builder-tools"><strong>جعبهٔ قطعات — بکش یا کلیک کن</strong><div class="builder-palette">${Object.entries(this.mission.parts).map(([type,count])=>`<button type="button" draggable="true" data-add="${type}">${names[type]} <small>${this.board.parts.filter(p=>p.type===type).length}/${count}</small></button>`).join('')}</div><p>۱. قطعه بچین　۲. پایانه‌های آبی را دو به دو وصل کن　۳. کلید را ببند و آزمایش کن</p><p>کلیک روی سیم: انتخاب؛ سپس حذف • کشیدن بدنه: جابه‌جایی • زوم: چرخ موس یا دو انگشت • پیمایش برد: کشیدن فضای خالی</p><details class="builder-inspector-panel"><summary>تنظیمات پیشرفته و کنترل دقیق</summary><div class="builder-inspector"><b>${p?names[p.type]+' انتخاب شده':'برای ویرایش، بدنهٔ یک قطعه را انتخاب کن'}</b>${p?'<button data-tool="rotate">چرخش ۹۰°</button><button data-tool="delete">حذف قطعه</button>':''}${p?.type==='switch'?`<button data-tool="switch">${p.closed?'باز کردن کلید':'بستن کلید'}</button>`:''}${p?.type==='resistor'?`<label>مقاومت <select id="partResistance">${[3,6,9,12,15,18,24,30].map(v=>`<option value="${v}" ${p.value===v?'selected':''}>${v} Ω</option>`).join('')}</select></label>`:''}</div></details>${wireList}<div class="builder-actions"><button data-tool="test" class="primary-button">آزمایش مدار من</button><button data-tool="cancel" ${this.pending?'':'disabled'}>لغو سیم‌کشی</button></div><small>مدل آموزشی DC: ولتاژ باتری و مقاومت‌ها را از کنترل کنار قطعه یا پنل پیشرفته تنظیم کن؛ هر لامپ مقاومت ثابت ۱۲ اهم دارد.</small></div>`;
+    const wireList=`<div class="wire-list"><label for="${prefix}wireSelect">سیم‌های مدار (${this.board.wires.length}) — اگر کلیک روی سیم سخت است، از این فهرست انتخاب کن</label><select id="${prefix}wireSelect"><option value="">یک سیم انتخاب کن…</option>${this.board.wires.map(([a,b],i)=>`<option value="${i}" ${this.selectedWire===i?'selected':''}>سیم ${i+1}: ${endpoint(a)} ↔ ${endpoint(b)}</option>`).join('')}</select><button type="button" data-tool="delete-wire" ${this.selectedWire===null?'disabled':''}>حذف سیم انتخاب‌شده</button></div>`;
+    this.controls.innerHTML=`<div class="builder-tools"><strong>جعبهٔ قطعات — بکش یا کلیک کن</strong><div class="builder-palette">${Object.entries(this.mission.parts).map(([type,count])=>`<button type="button" draggable="true" data-add="${type}">${names[type]} <small>${this.board.parts.filter(p=>p.type===type).length}/${count}</small></button>`).join('')}</div><p>۱. قطعه بچین　۲. پایانه‌های آبی را دو به دو وصل کن　۳. کلید را ببند و آزمایش کن</p><p>کلیک روی سیم: انتخاب؛ سپس حذف • کشیدن بدنه: جابه‌جایی • زوم: چرخ موس یا دو انگشت • پیمایش برد: کشیدن فضای خالی</p><details class="builder-inspector-panel"><summary>تنظیمات پیشرفته و کنترل دقیق</summary><div class="builder-inspector"><b>${p?names[p.type]+' انتخاب شده':'برای ویرایش، بدنهٔ یک قطعه را انتخاب کن'}</b>${p?'<button data-tool="rotate">چرخش ۹۰°</button><button data-tool="delete">حذف قطعه</button>':''}${p?.type==='switch'?`<button data-tool="switch">${p.closed?'باز کردن کلید':'بستن کلید'}</button>`:''}${p?.type==='resistor'?`<label>مقاومت <select id="${prefix}partResistance">${[3,6,9,12,15,18,24,30].map(v=>`<option value="${v}" ${p.value===v?'selected':''}>${v} Ω</option>`).join('')}</select></label>`:''}</div></details>${wireList}<div class="builder-actions"><button data-tool="test" class="primary-button">آزمایش مدار من</button><button data-tool="cancel" ${this.pending?'':'disabled'}>لغو سیم‌کشی</button></div><small>مدل آموزشی DC: ولتاژ باتری و مقاومت‌ها را از کنترل کنار قطعه یا پنل پیشرفته تنظیم کن؛ هر لامپ مقاومت ثابت ۱۲ اهم دارد.</small></div>`;
   }
 }
 
