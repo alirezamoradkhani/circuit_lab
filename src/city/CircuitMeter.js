@@ -7,7 +7,7 @@ export function measureCircuit(board){
   board.parts.filter(p=>p.type==='switch'&&p.closed).forEach(p=>join(p.id+':0',p.id+':1'));
   const battery=board.parts.find(p=>p.type==='battery'),plus=root(battery.id+':0'),minus=root(battery.id+':1');
   if(plus===minus)return {short:true,current:null,volts:{}};
-  const loads=board.parts.filter(p=>['lamp','resistor'].includes(p.type));
+  const loads=board.parts.filter(p=>['lamp','resistor'].includes(p.type)&&!p.disconnected);
   const edges=loads.map(p=>({id:p.id,a:root(p.id+':0'),b:root(p.id+':1'),g:1/p.value}));
   const reachable=new Set([plus,minus]);
   for(let pass=0;pass<parents.size;pass++)for(const e of edges){if(reachable.has(e.a))reachable.add(e.b);if(reachable.has(e.b))reachable.add(e.a);}
@@ -24,5 +24,6 @@ export function measureCircuit(board){
   unknown.forEach((n,i)=>known.set(n,matrix[i][unknown.length]));
   const volts=Object.fromEntries(edges.map(e=>[e.id,known.has(e.a)&&known.has(e.b)?Math.abs(known.get(e.a)-known.get(e.b)):null]));
   const current=edges.reduce((sum,e)=>sum+(e.a===plus?(battery.value-known.get(e.b))*e.g:e.b===plus?(battery.value-known.get(e.a))*e.g:0),0);
-  return {short:false,current,volts};
+  const terminals=Object.fromEntries([...parents.keys()].map(id=>[id,known.get(root(id))??null]));
+  return {short:false,current,volts,terminals};
 }

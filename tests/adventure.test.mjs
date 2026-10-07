@@ -3,6 +3,7 @@ import {AdventureSession} from '../src/city/AdventureSession.js';
 import {measureCircuit} from '../src/city/CircuitMeter.js';
 import {CityProgress} from '../src/city/Progress.js';
 
+const replaceShop=(s,value)=>{if(s.shop.switch.closed)s.toggleSwitch();s.shop.remove();s.install(value);s.toggleSwitch();};
 const gate=new AdventureSession(0);
 assert.equal(gate.current,0,'broken return carries no current');
 assert.equal(gate.test(),false);
@@ -12,12 +13,12 @@ const snapshot=gate.board.snapshot();gate.removeWire(0);assert.equal(gate.board.
 
 const shop=new AdventureSession(1);
 assert.ok(Math.abs(shop.current-.8)<1e-9);assert.equal(shop.test(),false);assert.equal(shop.tripped,true);
-shop.install(24);assert.equal(shop.test(),false,'tripped protector must be reset');
+replaceShop(shop,24);assert.equal(shop.test(),false,'tripped protector must be reset');
 shop.resetFuse();assert.equal(shop.test(),true);assert.equal(shop.spent,25);
 assert.equal(shop.stars,2);
-const broke=new AdventureSession(1);broke.install(36);broke.install(24);
+const broke=new AdventureSession(1);replaceShop(broke,36);replaceShop(broke,24);
 const resistance=broke.board.parts.find(p=>p.type==='resistor').value;
-broke.install(12);assert.equal(broke.board.parts.find(p=>p.type==='resistor').value,resistance,'cannot spend unavailable credit');assert.equal(broke.credits,5);
+replaceShop(broke,12);assert.equal(broke.board.parts.find(p=>p.type==='resistor').value,resistance,'cannot spend unavailable credit');assert.equal(broke.credits,5);
 
 const street=new AdventureSession(2);
 assert.ok(Math.abs(street.current-1/3)<1e-9);

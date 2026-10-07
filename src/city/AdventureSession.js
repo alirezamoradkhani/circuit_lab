@@ -1,7 +1,8 @@
 import {Board,evaluate} from '../builder/Board.js';
 import {cityMissions,seedMission} from './missions.js';
 import {adventures,appliances,replacements} from './adventureData.js';
-import {measureCircuit} from './CircuitMeter.js';
+import {measureCircuit} from './CircuitMeter.js?v=shop1';
+import {ShopRepair} from './ShopRepair.js';
 
 // Game state and electrical rules live outside the DOM so repairs can be tested.
 export class AdventureSession {
@@ -12,6 +13,7 @@ export class AdventureSession {
     this.credits=this.mission.budget;this.spent=0;this.mistakes=0;this.hints=0;
     this.tripped=false;this.won=false;this.notes=[];this.loads=[true,false,false,true];
     this.message=this.mission.request;
+    if(this.mission.id==='shop')this.shop=new ShopRepair(this);
   }
   get power(){return appliances.reduce((sum,p,i)=>sum+(this.loads[i]?p.power:0),0);}
   get current(){
@@ -23,8 +25,9 @@ export class AdventureSession {
   inspect(target){
     this.focus=target;this.pending=null;
     if(target==='cabinet'){this.panel=!this.won;this.message=this.won?'این تعمیر تمام شده است؛ برای امتحان یک راه دیگر، مأموریت را از نو شروع کن.':'جعبه‌برق باز است. قطعه یا مسیر سیم را بررسی و تعمیر کن.';return;}
-    if(target==='person'){this.message=this.mission.request;return;}
+    if(target==='person'){this.message=this.won?this.mission.success:this.shop?.brightness?'نور تابلو برگشته، اما هنوز کم‌نور است. مقدار قطعه را دوباره بررسی کن.':this.mission.request;return;}
     if(this.tool==='meter'){
+      if(this.shop){this.panel=true;this.message='پراب قرمز و مشکی را روی دو نقطهٔ جعبه‌برق قرار بده؛ نمایشگر اختلاف ولتاژ آن‌ها را نشان می‌دهد.';return;}
       const text=this.reading(target);this.note(text);return;
     }
     this.note(target==='source'?this.mission.source:this.mission.plate);
@@ -39,6 +42,7 @@ export class AdventureSession {
   }
   spend(amount){if(this.credits<amount){this.message='اعتبار قطعات کافی نیست. می‌توانی مأموریت را از نو شروع کنی.';return false;}this.credits-=amount;this.spent+=amount;return true;}
   install(value){
+    if(this.shop){this.shop.install(value);return;}
     if(this.won)return;
     const item=replacements.find(p=>p.value===value),part=this.board.parts.find(p=>p.type==='resistor');
     if(!item||!part||!['shop','station'].includes(this.mission.id))return;
@@ -71,6 +75,8 @@ export class AdventureSession {
       this.tripped=this.power>18;ok=!this.tripped&&this.loads.slice(0,3).every(Boolean);
       reason=this.tripped?'اضافه‌بار! محافظ مولد قطع شد. توان وسایل فعال از ۱۸ وات بیشتر است.':'هنوز همهٔ مصرف‌کننده‌های ضروری فعال نیستند.';
     }else{
+      if(this.shop?.empty){this.mistakes++;this.message='سوکت خالی است؛ مسیر مدار هنوز قطع است.';return false;}
+      if(this.shop)this.shop.preview=true;
       const result=evaluate(this.board,cityMissions[this.index]);ok=result.ok;reason=result.message;
       if(measureCircuit(this.board).short){this.tripped=true;reason='اتصال کوتاه! محافظ قطع شد؛ سیم اتصال مستقیم دو قطب را بردار.';}
       if(this.mission.id==='shop'&&this.current>.4){this.tripped=true;reason='جریان بیش از ۰٫۴ آمپر شد و محافظ تابلو قطع کرد؛ مقاومت مناسب‌تری نصب کن.';}
