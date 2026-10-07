@@ -1,7 +1,7 @@
 import {renderTown} from './scene.js';
 import {adventures} from './adventureData.js';
 import {AdventureSession} from './AdventureSession.js';
-import {renderAdventure} from './AdventureView.js?v=adventure2';
+import {renderAdventure} from './AdventureView.js?v=scene4';
 import {CityProgress} from './Progress.js';
 
 export class CityGame {
@@ -13,6 +13,7 @@ export class CityGame {
     root.innerHTML=`<div class="city-home"><section class="city-overview"><div><span class="eyebrow">داستان تعاملی · بازگشت روشنایی</span><h1>یک شهر منتظر توست</h1><p>با مردم گفت‌وگو کن، خرابی‌ها را پیدا کن و زندگی را به محله برگردان.</p></div><div class="city-meter"><b data-progress></b><span>مکان بازسازی‌شده</span><progress max="5" value="0" aria-label="پیشرفت بازسازی شهر"></progress></div></section><div class="city-map" aria-label="نقشهٔ شهر"></div><p class="city-save" data-save></p><div class="campaign-ending" hidden><h2>محله دوباره روشن است!</h2><p>از یک چراغ خاموش تا بازگرداندن برق یک محله؛ کار تیم تعمیرات تمام شد. می‌توانی برای ستاره‌های بیشتر به مکان‌ها برگردی.</p></div></div><div class="adventure-layout" hidden><aside class="adventure-sidebar"><button data-action="map">→ بازگشت به خیابان</button><details class="adventure-missions" open><summary>مأموریت‌های محله</summary><nav data-missions aria-label="مأموریت‌های شهر"></nav></details><p>بررسی ← اندازه‌گیری ← تعمیر ← آزمایش</p></aside><main class="adventure-work" data-stage></main></div>`;
     root.addEventListener('click',e=>this.handle(e));
     root.addEventListener('keydown',e=>{
+      if(e.key==='Escape'&&this.sessions.get(this.index)?.messageTarget){this.sessions.get(this.index).messageTarget=null;this.renderGame();this.el(`[data-target="${this.sessions.get(this.index).focus}"]`)?.focus({preventScroll:true});}
       if(['Enter',' '].includes(e.key)&&e.target.matches('svg [role="button"]')){e.preventDefault();this.handle(e);}
     });
     this.renderMap();
@@ -53,6 +54,7 @@ export class CityGame {
     const action=button.dataset.action;
     if(action==='map'){this.showMap();return;}
     const s=this.sessions.get(this.index);if(!s)return;
+    if(action==='dismiss-message'){s.messageTarget=null;this.renderGame();this.el(`[data-target="${s.focus}"]`)?.focus({preventScroll:true});return;}
     if(action==='next'){this.index<4?this.start(this.index+1):this.showMap();return;}
     if(action==='restart'){this.sessions.set(this.index,new AdventureSession(this.index));this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});return;}
     if(button.dataset.tool){s.tool=button.dataset.tool;s.message=s.tool==='meter'?'برای اندازه‌گیری، منبع یا مصرف‌کننده را در صحنه انتخاب کن.':'با انتخاب آدم‌ها و وسایل، سرنخ‌های خرابی را پیدا کن.';}
@@ -67,6 +69,8 @@ export class CityGame {
     if(action==='reset-fuse')s.resetFuse();
     if(action==='close-panel')s.panel=false;
     if(action==='cancel-wire')s.pending=null;
+    s.messageTarget=button.dataset.target||(button.dataset.tool?'source':action==='hint'?'person':'cabinet');
+    if(action==='close-panel')s.messageTarget=null;
     const focusSelector=Object.entries(button.dataset).map(([key,value])=>`[data-${key}="${value}"]`).join('');
     this.renderGame();this.renderMap();
     this.el('[data-stage]').querySelector(focusSelector)?.focus({preventScroll:true});

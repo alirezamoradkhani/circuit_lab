@@ -1,0 +1,14 @@
+.scene-message{direction:rtl;position:absolute;z-index:4;width:min(290px,calc(100% - 24px));background:#fffdf2;color:#38574a;border:1px solid #b9cbb0;border-radius:17px;box-shadow:0 7px 22px #294c482b;padding:11px 14px;text-align:right;animation:message-appear .16s ease-out}
+.scene-message header{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#59714f}
+.scene-message header button{background:transparent;color:#59714f;border:0;min-width:32px;min-height:32px;padding:0;border-radius:50%;font-size:22px;line-height:1}
+.scene-message header button:hover{background:#e7eedc}.scene-message p{font-size:13px;line-height:1.9;margin:5px 0 0;max-height:150px;overflow:auto;overflow-wrap:anywhere}
+.scene-message:not(.cabinet-message):after{content:'';position:absolute;bottom:-9px;left:var(--tail,30px);width:16px;height:16px;transform:rotate(45deg);background:#fffdf2;border-bottom:1px solid #b9cbb0;border-right:1px solid #b9cbb0}
+.bubble-person{left:5%;bottom:55%;--tail:48%}.bubble-source{left:3%;bottom:25%;--tail:16%}.bubble-load{left:34%;top:5%;--tail:45%}.bubble-cabinet{right:3%;bottom:44%;--tail:75%}
+.with-cabinet .adventure-site .scene-message{top:12px;bottom:auto;left:12px;right:auto;max-height:calc(100% - 24px);overflow:auto}.with-cabinet .adventure-site .scene-message:after{display:none}
+.scene-message.fault{background:#fff1dd;border-color:#dcb486}.scene-message.fault:after{background:#fff1dd;border-color:#dcb486}
+.scene-message .reset-protector{background:#9d603d;color:white;border:0;border-radius:9px;padding:8px 12px;min-height:40px;font-size:12px;margin-top:10px}
+.cabinet-message{position:relative;width:100%;margin:12px 0;box-shadow:none;padding:8px 12px;border-radius:11px}.cabinet-message p{font-size:12px;max-height:110px}
+.character{pointer-events:none}.scene-message+*{isolation:auto}
+@keyframes message-appear{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
+@media(max-width:800px){.scene-message:not(.cabinet-message){left:12px;right:auto;top:10px;bottom:auto;width:calc(100% - 24px);max-height:calc(100% - 24px);overflow:auto;padding:8px 12px}.scene-message:not(.cabinet-message):after{display:none}.scene-message p{font-size:12px;line-height:1.85;max-height:105px}.scene-message header{font-size:11px}.scene-message header button{min-width:36px;min-height:36px}.cabinet-message p{max-height:110px}}
+@media(prefers-reduced-motion:reduce){.scene-message{animation:none}}
