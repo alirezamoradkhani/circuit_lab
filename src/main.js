@@ -2,7 +2,7 @@ import {CircuitBuilder} from './builder/CircuitBuilder.js?v=city1';
 import {levels,topics,topicForLevel} from './data/levels.js';
 import {LessonSession} from './lessons/LessonSession.js';
 import {Schematics} from './lessons/Schematics.js';
-import {CityGame} from './city/CityGame.js?v=city3';
+import {CityGame} from './city/CityGame.js?v=city5';
 
 const $=id=>document.getElementById(id);
 const ui={svg:$('circuitSvg'),controls:$('levelControls'),feedback:$('feedbackText'),status:$('statusChip'),next:$('nextButton')};
