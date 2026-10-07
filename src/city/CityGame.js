@@ -1,95 +1,74 @@
-import {renderTown,buildingArt} from './scene.js?v=city3';
-import {CircuitBuilder} from '../builder/CircuitBuilder.js?v=city1';
-import {cityMissions,seedMission} from './missions.js?v=city1';
+import {renderTown} from './scene.js';
+import {adventures} from './adventureData.js';
+import {AdventureSession} from './AdventureSession.js';
+import {renderAdventure} from './AdventureView.js?v=adventure2';
 import {CityProgress} from './Progress.js';
 
 export class CityGame {
   constructor(root){
-    this.root=root;this.index=null;this.hints=0;this.active=false;
+    this.root=root;this.index=null;this.active=false;this.sessions=new Map();
     let storage;try{storage=window.localStorage;}catch{}
-    this.progress=new CityProgress(storage);
-    root.innerHTML=`<div class="city-home"><section class="city-overview"><div><span class="eyebrow">فصل اول · پس از خاموشی</span><h1>محلهٔ خاموش</h1><p>برای شروع تعمیر، یک ساختمان را انتخاب کن.</p></div><div class="city-meter"><b data-progress></b><span>نقطهٔ روشن</span><progress max="5" value="0" aria-label="پیشرفت روشن‌کردن محله"></progress></div></section>
-    <div class="city-map" aria-label="نقشهٔ مأموریت‌های محله"></div>
-    <p class="city-save" data-save></p></div>
-    <div class="city-play" hidden><aside class="city-sidebar"><button class="city-back" data-action="map">→ بازگشت به خیابان</button><details class="city-mission-menu" open><summary>مأموریت‌های محله</summary><nav data-mission-list aria-label="مأموریت‌های محله"></nav></details><details class="city-instructions"><summary>داستان و راهنمای بازی</summary><div class="city-location" aria-hidden="true"></div><p data-story></p><p>پایانه‌های آبی را دو به دو وصل کن. بدنهٔ قطعه را بکش یا برای تغییر مقدار انتخاب کن. برای حذف سیم، روی آن بزن و «حذف سیم» را انتخاب کن.</p><small>مدل آموزشی DC؛ مقاومت هر لامپ ۱۲ اهم است. راهنمای کمتر، ستارهٔ بیشتر!</small></details></aside>
-    <section class="city-work" aria-label="تعمیر ساختمان">
-      <div class="city-brief"><span class="eyebrow" data-skill></span><h2 tabindex="-1" data-title></h2><p class="city-objective" data-objective></p></div>
-      <div class="city-toolbar" aria-label="ابزارهای تعمیر"><button class="city-test" data-action="test">آزمایش مدار</button><div class="city-tool-icons"><button data-action="undo" aria-label="برگشت یک حرکت" title="برگشت یک حرکت">↶</button><button data-action="hint" aria-label="راهنمای مرحله‌ای" title="راهنمای مرحله‌ای">?</button><button data-action="restart" aria-label="شروع دوباره" title="شروع دوباره">↻</button></div><div class="city-zoom" dir="ltr"><button data-action="zoom-out" aria-label="کوچک‌نمایی">−</button><output data-zoom></output><button data-action="zoom-in" aria-label="بزرگ‌نمایی">+</button><button data-action="zoom-reset" aria-label="بازگشت به اندازهٔ اصلی">⌂</button></div></div>
-      <div class="city-status"><p class="city-feedback" role="status" data-feedback></p><button data-action="delete-wire" hidden>حذف سیم</button><button data-action="cancel" hidden>لغو اتصال</button></div><p class="city-hint" data-hint hidden></p>
-      <div class="city-victory" role="status" hidden><strong data-victory></strong><button data-action="next">مأموریت بعد ←</button></div>
-      <svg class="builder-board city-board" id="cityCircuit" viewBox="0 0 1200 800" role="group" aria-label="مدار مأموریت شهر"></svg><details class="city-equipment"><summary>قطعات و تنظیمات بیشتر</summary><div data-controls></div></details>
-    </section></div>`;
-    this.builder=new CircuitBuilder(this.el('#cityCircuit'),this.el('[data-controls]'),()=>this.sync(),()=>this.win());
-    root.addEventListener('click',e=>{
-      const mission=e.target.closest('[data-mission]');if(mission){this.start(Number(mission.dataset.mission));return;}
-      const action=e.target.closest('[data-action]')?.dataset.action;if(!action)return;
-      if(action==='map')this.showMap();
-      else if(action==='next'){if(this.index<4)this.start(this.index+1);else this.showMap();}
-      else if(action==='restart')this.start(this.index);
-      else if(action==='hint')this.hint();
-      else this.builder.action(action);
+    // New gameplay has separate completion records from the old circuit-only mode.
+    this.progress=new CityProgress(storage,'circuit-lab.adventure.v1');
+    root.innerHTML=`<div class="city-home"><section class="city-overview"><div><span class="eyebrow">داستان تعاملی · بازگشت روشنایی</span><h1>یک شهر منتظر توست</h1><p>با مردم گفت‌وگو کن، خرابی‌ها را پیدا کن و زندگی را به محله برگردان.</p></div><div class="city-meter"><b data-progress></b><span>مکان بازسازی‌شده</span><progress max="5" value="0" aria-label="پیشرفت بازسازی شهر"></progress></div></section><div class="city-map" aria-label="نقشهٔ شهر"></div><p class="city-save" data-save></p><div class="campaign-ending" hidden><h2>محله دوباره روشن است!</h2><p>از یک چراغ خاموش تا بازگرداندن برق یک محله؛ کار تیم تعمیرات تمام شد. می‌توانی برای ستاره‌های بیشتر به مکان‌ها برگردی.</p></div></div><div class="adventure-layout" hidden><aside class="adventure-sidebar"><button data-action="map">→ بازگشت به خیابان</button><details class="adventure-missions" open><summary>مأموریت‌های محله</summary><nav data-missions aria-label="مأموریت‌های شهر"></nav></details><p>بررسی ← اندازه‌گیری ← تعمیر ← آزمایش</p></aside><main class="adventure-work" data-stage></main></div>`;
+    root.addEventListener('click',e=>this.handle(e));
+    root.addEventListener('keydown',e=>{
+      if(['Enter',' '].includes(e.key)&&e.target.matches('svg [role="button"]')){e.preventDefault();this.handle(e);}
     });
     this.renderMap();
   }
   el(selector){return this.root.querySelector(selector);}
-  setActive(active){this.active=active;this.builder.active=active&&this.index!==null&&!this.el('.city-play').hidden;}
+  setActive(active){this.active=active;}
   renderMap(){
     const count=Object.keys(this.progress.stars).length;
     this.el('[data-progress]').textContent=`${count.toLocaleString('fa-IR')} / ۵`;
     this.el('progress').value=count;
-    this.el('[data-save]').textContent=this.progress.saved?'پیشرفت در همین مرورگر ذخیره می‌شود. سه ستاره: بدون راهنما؛ دو ستاره: یک راهنما؛ یک ستاره: راهنمای بیشتر.':'ذخیره‌سازی مرورگر در دسترس نیست؛ پیشرفت فعلاً تا زمان بستن صفحه نگه داشته می‌شود.';
-    this.el('.city-map').innerHTML=renderTown(cityMissions,this.progress,this.index);
-    this.el('[data-mission-list]').innerHTML=cityMissions.map((m,i)=>`<button data-mission="${i}" ${this.progress.unlocked(i)?'':'disabled'} ${this.index===i?'aria-current="step"':''}><span class="city-step-number">${(i+1).toLocaleString('fa-IR')}</span><span><strong>${m.title}</strong><small>${this.progress.stars[m.id]?'★'.repeat(this.progress.stars[m.id]):this.progress.unlocked(i)?m.skill:'پس از مأموریت قبلی'}</small></span></button>`).join('');
+    this.el('.city-map').innerHTML=renderTown(adventures,this.progress,this.index);
+    this.el('[data-save]').textContent=this.progress.saved?'ستاره‌ها در همین مرورگر ذخیره می‌شوند؛ تعمیر نیمه‌تمام تا زمان باز بودن صفحه حفظ می‌شود.':'ذخیره‌سازی مرورگر در دسترس نیست؛ پیشرفت فقط تا زمان بستن صفحه باقی می‌ماند.';
+    this.el('.campaign-ending').hidden=count!==adventures.length;
+    this.el('[data-missions]').innerHTML=adventures.map((m,i)=>`<button data-mission="${i}" ${this.progress.unlocked(i)?'':'disabled'} ${i===this.index?'aria-current="step"':''}><span>${(i+1).toLocaleString('fa-IR')}</span><div><b>${m.title}</b><small>${this.progress.stars[m.id]?'★'.repeat(this.progress.stars[m.id]):this.sessions.has(i)?'در حال تعمیر':this.progress.unlocked(i)?m.skill:'پس از مأموریت قبلی'}</small></div></button>`).join('');
   }
   start(index){
     if(!this.progress.unlocked(index))return;
-    this.index=index;this.hints=0;this.won=false;
-    const mission=cityMissions[index];
-    this.el('.city-home').hidden=true;
-    this.el('.city-play').hidden=false;
-    this.el('.city-mission-menu').open=!window.matchMedia('(max-width:800px)').matches;
-    this.el('.city-equipment').open=false;
-    this.el('[data-title]').textContent=mission.title;
-    this.el('.city-location').innerHTML=buildingArt(mission.id);
-    this.el('.city-location').classList.remove('powered');
-    this.el('[data-story]').textContent=mission.story;
-    this.el('[data-skill]').textContent=`مأموریت ${(index+1).toLocaleString('fa-IR')} از ۵ · ${mission.skill}`;
-    this.el('[data-objective]').textContent=mission.objective;
-    this.el('[data-hint]').hidden=true;
-    this.el('.city-victory').hidden=true;
-    this.builder.load(mission);seedMission(this.builder.board,mission);
-    this.builder.message='خرابی را برطرف کن، سپس مدار را آزمایش کن.';
-    this.builder.render();this.renderMap();
-    this.el('[data-title]').focus({preventScroll:true});
+    this.index=index;if(!this.sessions.has(index))this.sessions.set(index,new AdventureSession(index));
+    this.el('.city-home').hidden=true;this.el('.adventure-layout').hidden=false;
+    this.el('.adventure-missions').open=!window.matchMedia('(max-width:800px)').matches;
+    this.renderMap();this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});
     this.root.scrollIntoView({block:'start'});
   }
-  sync(){
-    if(!this.builder?.board)return;
-    this.el('[data-feedback]').textContent=this.builder.message;
-    this.el('[data-zoom]').textContent=`${Math.round(this.builder.zoom*100).toLocaleString('fa-IR')}٪`;
-    this.el('[data-action="undo"]').disabled=!this.builder.history.length;
-    this.el('[data-action="delete-wire"]').hidden=this.builder.selectedWire===null;
-    this.el('[data-action="cancel"]').hidden=!this.builder.pending;
-    if(!this.builder.result?.ok)this.el('.city-victory').hidden=true;
-  }
-  hint(){
-    const mission=cityMissions[this.index];if(!mission)return;
-    this.hints=Math.min(3,this.hints+1);
-    this.el('[data-hint]').hidden=false;
-    this.el('[data-hint]').textContent=`راهنمای ${this.hints.toLocaleString('fa-IR')} از ۳: ${mission.hints[this.hints-1]}`;
-  }
-  win(){
-    const mission=cityMissions[this.index];
-    if(!this.won){this.progress.complete(mission.id,this.hints);this.won=true;}
-    this.renderMap();
-    this.el('.city-location').classList.add('powered');
-    this.el('.city-victory').hidden=false;
-    this.el('[data-victory]').textContent=mission.restored;
-    this.el('[data-action="next"]').textContent=this.index===4?'دیدن محلهٔ روشن ←':'مأموریت بعد ←';
+  renderGame(){
+    const notesOpen=!!this.el('.field-notes')?.open;
+    this.el('[data-stage]').innerHTML=renderAdventure(this.sessions.get(this.index));
+    this.el('.field-notes').open=notesOpen;
   }
   showMap(){
-    this.builder.active=false;this.el('.city-play').hidden=true;this.el('.city-home').hidden=false;this.renderMap();
-    const button=this.el(`[data-mission="${this.index??0}"]`);button.focus({preventScroll:true});
-    this.el('.city-overview').scrollIntoView({block:'start',behavior:'smooth'});
+    this.el('.city-home').hidden=false;this.el('.adventure-layout').hidden=true;this.renderMap();
+    this.el(`.city-map [data-mission="${this.index??0}"]`).focus({preventScroll:true});this.root.scrollIntoView({block:'start'});
+  }
+  handle(e){
+    if(!this.active)return;
+    const button=e.target.closest('[data-mission],[data-action],[data-tool],[data-target],[data-pin],[data-wire],[data-resistor],[data-load]');
+    if(!button||button.disabled)return;
+    if(button.dataset.mission!==undefined){this.start(Number(button.dataset.mission));return;}
+    const action=button.dataset.action;
+    if(action==='map'){this.showMap();return;}
+    const s=this.sessions.get(this.index);if(!s)return;
+    if(action==='next'){this.index<4?this.start(this.index+1):this.showMap();return;}
+    if(action==='restart'){this.sessions.set(this.index,new AdventureSession(this.index));this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});return;}
+    if(button.dataset.tool){s.tool=button.dataset.tool;s.message=s.tool==='meter'?'برای اندازه‌گیری، منبع یا مصرف‌کننده را در صحنه انتخاب کن.':'با انتخاب آدم‌ها و وسایل، سرنخ‌های خرابی را پیدا کن.';}
+    if(button.dataset.target)s.inspect(button.dataset.target);
+    if(button.dataset.pin)s.pin(button.dataset.pin);
+    if(button.dataset.wire!==undefined)s.removeWire(Number(button.dataset.wire));
+    if(button.dataset.resistor)s.install(Number(button.dataset.resistor));
+    if(button.dataset.load!==undefined)s.toggleLoad(Number(button.dataset.load));
+    if(action==='test'&&s.test())this.progress.complete(s.mission.id,3-s.stars);
+    if(action==='hint')s.hint();
+    if(action==='switch')s.toggleSwitch();
+    if(action==='reset-fuse')s.resetFuse();
+    if(action==='close-panel')s.panel=false;
+    if(action==='cancel-wire')s.pending=null;
+    const focusSelector=Object.entries(button.dataset).map(([key,value])=>`[data-${key}="${value}"]`).join('');
+    this.renderGame();this.renderMap();
+    this.el('[data-stage]').querySelector(focusSelector)?.focus({preventScroll:true});
   }
 }
