@@ -50,6 +50,8 @@ export function evaluate(board,mission){
     resistance=loads.reduce((sum,p)=>sum+p.value,0);
   }
   const current=battery.value/resistance;
-  if(mission.target&&Math.abs(current-mission.target)>0.001)return fail(`اتصال سری درست است، ولی جریان ${current.toFixed(2)} آمپر است. مقاومت کل را برای ۰٫۵ آمپر تنظیم کن.`);
+  if(mission.target&&Math.abs(current-mission.target)>0.001)return fail(`اتصال سری درست است، ولی جریان ${current.toFixed(2)} آمپر است. مقاومت کل را برای ${mission.target.toLocaleString('fa-IR')} آمپر تنظیم کن.`);
   return {ok:true,current,resistance,message:`مدار درست است! مقاومت معادل ${resistance.toFixed(1)} اهم و جریان منبع ${current.toFixed(2)} آمپر است.`};
 }
+
+
