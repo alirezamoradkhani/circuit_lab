@@ -16,6 +16,15 @@ for(const level of levels){
  assert.equal(session.result,null,'edit invalidates victory');assert.equal(session.submit().ok,false,level.id+' rejects wrong answer');
  assert.equal(new LessonSession(level).result,null,'reset never pre-solves');
 }
+const signature=level=>JSON.stringify({type:level.type,diagram:level.diagram,description:level.description,fields:level.fields,hint:level.hint,explanation:level.explanation});
+const exactSignatures=new Set(levels.map(signature));
+assert.equal(exactSignatures.size,levels.length,'every stage must have unique content');
+for(const topic of new Set(levels.map(level=>level.topicId))){
+ const topicLevels=levels.filter(level=>level.topicId===topic);
+ const normalize=value=>String(value??'').replace(/[۰-۹0-9]+/g,'#').replace(/\s+/g,' ');
+ const templates=new Set(topicLevels.map(level=>normalize(level.description)+'|'+JSON.stringify((level.fields??[]).map(field=>[field.key,field.label,field.unit,field.options?.map(option=>option[0])]))) );
+ assert.equal(templates.size,topicLevels.length,`${topic} must not reuse the same exercise template`);
+}
 assert.equal(parseNumber('−۸'),-8);assert.equal(parseNumber('۰٫۱۲۵'),0.125);assert.equal(parseNumber('Infinity'),null);assert.equal(parseNumber(''),null);assert.equal(parseNumber('جواب'),null);
 // Independently verify the harder answer sets against circuit equations.
 const answers=id=>Object.fromEntries(levels.find(l=>l.id===id).fields.map(f=>[f.key,f.answer]));
