@@ -1,13 +1,16 @@
-import {CircuitBuilder} from './builder/CircuitBuilder.js';
+import {CircuitBuilder} from './builder/CircuitBuilder.js?v=city1';
 import {levels,topics,topicForLevel} from './data/levels.js';
 import {LessonSession} from './lessons/LessonSession.js';
 import {Schematics} from './lessons/Schematics.js';
+import {CityGame} from './city/CityGame.js?v=city1';
 
 const $=id=>document.getElementById(id);
 const ui={svg:$('circuitSvg'),controls:$('levelControls'),feedback:$('feedbackText'),status:$('statusChip'),next:$('nextButton')};
 const boardZoom=$('boardZoom'),zoomValue=$('zoomValue');
 const diagrams=new Schematics(ui.svg);
 const completed=new Set();
+let mode='lab';
+const city=new CityGame($('cityMode'));
 let current=0,session,score=0,toastTimer;
 const builder=new CircuitBuilder(ui.svg,ui.controls,()=>{
  if(!builder.active)return;
@@ -102,7 +105,18 @@ $('undoButton').addEventListener('click',()=>{if(builder.active)builder.action('
 $('boardZoom').addEventListener('click',e=>{const button=e.target.closest('[data-board-tool]');if(button&&builder.active)builder.action(button.dataset.boardTool);});
 $('hintButton').addEventListener('click',()=>{session.hinted=true;if(builder.active){builder.message=session.level.hint;builder.render();}else{ui.feedback.textContent=session.level.hint;}});
 ui.next.addEventListener('click',()=>{if(current<levels.length-1)loadLevel(current+1);else{clearTimeout(toastTimer);$('toast').textContent='از منوی سمت چپ می‌توانی تمرین دیگری انتخاب کنی.';$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2500);}});
-document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='r')loadLevel(current);if(e.key.toLowerCase()==='h')$('hintButton').click();});
+document.addEventListener('keydown',e=>{if(mode!=='lab'||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='r')loadLevel(current);if(e.key.toLowerCase()==='h')$('hintButton').click();});
+document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
+ mode=button.dataset.mode;
+ document.querySelector('.main-grid').hidden=mode!=='lab';
+ $('cityMode').hidden=mode!=='city';
+ builder.active=mode==='lab'&&session.level.type==='builder';
+ city.setActive(mode==='city');
+ boardZoom.hidden=!builder.active;
+ $('progressLabel').hidden=mode==='city';
+ document.querySelector('footer').hidden=mode==='city';
+ document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+}));
 $('soundButton').hidden=true;
 const total=document.querySelector('.level-panel .panel-title span:last-child');if(total)total.textContent=levels.length.toLocaleString('fa-IR')+' مرحله';
 loadLevel(0);

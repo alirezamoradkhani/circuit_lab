@@ -7,6 +7,7 @@
   <meta name="description" content="بازی آموزشی مدارهای الکتریکی">
   <title>آزمایشگاه مدار | Circuit Lab</title>
   <link rel="stylesheet" href="styles.css?v=lesson-rebuild7">
+  <link rel="stylesheet" href="src/city/city.css?v=city1">
 </head>
 <body>
   <div class="app-shell">
@@ -15,6 +16,8 @@
       <div class="top-actions"><span class="progress-label" id="progressLabel">مرحله ۱ از ۱۸۰</span><button class="icon-button" id="soundButton" aria-label="صدا">🔊</button></div>
     </header>
 
+    <nav class="mode-switch" aria-label="انتخاب حالت بازی"><button type="button" data-mode="lab" aria-pressed="true">آزمایشگاه · تمرین آزاد</button><button type="button" data-mode="city" aria-pressed="false">مأموریت‌های شهر · محلهٔ خاموش</button></nav>
+    <section id="cityMode" hidden aria-label="مأموریت‌های شهر"></section>
     <main class="main-grid">
       <section class="game-column">
         <div class="mission-card">
@@ -39,7 +42,7 @@
     <footer><span>آموزش مدارهای الکتریکی · کارگاه و حل مسئله</span><span>کلید H برای راهنمایی · R برای شروع دوباره</span></footer>
   </div>
   <div class="toast" id="toast" role="status"></div>
-  <script type="module" src="src/main.js?v=lesson-rebuild7"></script>
+  <script type="module" src="src/main.js?v=city2"></script>
 </body>
 </html>
 
