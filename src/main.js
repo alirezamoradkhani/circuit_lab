@@ -2,7 +2,7 @@ import {CircuitBuilder} from './builder/CircuitBuilder.js?v=city1';
 import {levels,topics,topicForLevel} from './data/levels.js';
 import {LessonSession} from './lessons/LessonSession.js';
 import {Schematics} from './lessons/Schematics.js';
-import {CityGame} from './city/CityGame.js?v=city1';
+import {CityGame} from './city/CityGame.js?v=city3';
 
 const $=id=>document.getElementById(id);
 const ui={svg:$('circuitSvg'),controls:$('levelControls'),feedback:$('feedbackText'),status:$('statusChip'),next:$('nextButton')};
@@ -108,6 +108,10 @@ ui.next.addEventListener('click',()=>{if(current<levels.length-1)loadLevel(curre
 document.addEventListener('keydown',e=>{if(mode!=='lab'||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='r')loadLevel(current);if(e.key.toLowerCase()==='h')$('hintButton').click();});
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
  mode=button.dataset.mode;
+ document.body.classList.toggle('city-theme',mode==='city');
+ document.querySelector('.brand strong').textContent=mode==='city'?'شهر روشن':'آزمایشگاه مدار';
+ document.querySelector('.brand small').textContent=mode==='city'?'RESTORE THE LIGHT':'CIRCUIT LAB';
+ document.querySelector('meta[name="theme-color"]').content=mode==='city'?'#edf7f3':'#101827';
  document.querySelector('.main-grid').hidden=mode!=='lab';
  $('cityMode').hidden=mode!=='city';
  builder.active=mode==='lab'&&session.level.type==='builder';
