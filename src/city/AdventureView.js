@@ -2,20 +2,21 @@ import {buildingArt} from './scene.js';
 import {appliances,replacements} from './adventureData.js';
 import {character} from './characters.js';
 import {sceneMessage} from './SceneMessage.js';
+import {shopWorkbench} from './ShopWorkbench.js?v=shop3';
 const fa=n=>n.toLocaleString('fa-IR');
 export function renderSite(s){
   const street=s.mission.id==='street';
   const art=street?[250,410,570].map(x=>`<g><path d="M${x} 340V110Q${x} 85 ${x+25} 85" fill="none" stroke="#486975" stroke-width="10"/><path class="town-light" d="M${x+10} 85h40l10 22h-60Z"/><path class="light-beam" d="M${x-5} 107L${x-55} 340H${x+100}L${x+55} 107Z"/></g>`).join(''):buildingArt(s.mission.id).replace('<svg ','<svg x="180" y="25" width="460" height="380" ');
-  return `<div class="adventure-site site-${s.mission.id} ${s.won?'powered restored':''} ${s.tripped?'power-tripped':''}">
+  return `<div class="adventure-site site-${s.mission.id} ${s.won?'powered restored':''} ${s.tripped?'power-tripped':''}" ${s.shop?`style="--sign-light:${s.shop.brightness}"`:''}>
     <svg class="site-art" viewBox="0 0 800 460" aria-hidden="true"><defs><linearGradient id="siteSky" x2="0" y2="1"><stop stop-color="#b4e0ec"/><stop offset="1" stop-color="#eef4cf"/></linearGradient></defs><rect width="800" height="460" fill="url(#siteSky)"/><circle cx="690" cy="65" r="32" fill="#fff0a5"/><path d="M0 210Q160 140 300 215T800 180V390H0" fill="#b7d5ad"/><path d="M0 340H800V460H0" fill="#e3d9ba"/><path d="M0 421H800" stroke="#93a8a5" stroke-width="44"/><path d="M0 421H800" stroke="#e7ead4" stroke-width="3" stroke-dasharray="28 24"/>${art}
-    ${s.mission.id==='shop'?'<g class="site-shutter"><rect x="470" y="225" width="80" height="125" fill="#849798"/><path d="M473 242h74m-74 20h74m-74 20h74m-74 20h74m-74 20h74" stroke="#b3c2bd" stroke-width="4"/></g>':''}
+    ${s.mission.id==='shop'?'<g class="shop-sign"><rect x="240" y="85" width="340" height="62" rx="14" fill="#ffe187"/><text x="410" y="128" text-anchor="middle" font-size="32" fill="#795b20">سپید</text></g><g class="site-shutter"><rect x="470" y="225" width="80" height="125" fill="#849798"/><path d="M473 242h74m-74 20h74m-74 20h74m-74 20h74m-74 20h74" stroke="#b3c2bd" stroke-width="4"/></g>':''}
     ${s.mission.id==='gate'?`<path d="M323 345V195M356 345V183M390 345V183M422 345V195" stroke="#4f7680" stroke-width="8" class="site-gate-bars"/>`:''}
     <g transform="translate(675 220)"><rect width="62" height="98" rx="8" fill="#506e70"/><rect x="9" y="10" width="44" height="60" rx="4" fill="#8aa99f"/><path d="M35 20L20 45H33L27 61L44 36H33Z" fill="#ffdd81"/><circle cx="46" cy="82" r="5" fill="${s.tripped?'#e16b5a':s.won?'#f9e680':'#adc0b0'}"/></g>
     <g transform="translate(64 292)"><rect width="64" height="47" rx="6" fill="#5c8583"/><path d="M17 0V-8H48V0" fill="none" stroke="#395963" stroke-width="6"/><text x="32" y="31" text-anchor="middle" fill="#fff5c4" font-size="18">12V</text></g>
     ${character(s.mission.id)}
     ${s.mission.id==='clinic'?'<g class="clinic-fan" transform="translate(470 250)"><circle r="23" fill="#eef3d9" stroke="#649185" stroke-width="4"/><g class="fan-blades"><path d="M0 -20V20M-20 0H20" stroke="#639387" stroke-width="7"/></g></g>':''}
     ${s.won?`<g class="site-traveller">${character('visitor',{x:35,y:392,scale:.45})}${street?'<circle cx="15" cy="443" r="16" fill="none" stroke="#48626c" stroke-width="4"/><circle cx="64" cy="443" r="16" fill="none" stroke="#48626c" stroke-width="4"/><path d="M15 443L31 419L45 443H15M45 443L58 419L64 443M55 416H68" fill="none" stroke="#bc6b49" stroke-width="4"/>':''}</g>`:''}</svg>
-    <div class="site-label">${s.won?'✓ برق برقرار است':s.tripped?'محافظ قطع شده':'محل مأموریت · '+s.mission.title}</div>
+    <div class="site-label">${s.won?'✓ برق برقرار است':s.tripped?'محافظ قطع شده':s.shop?.brightness?'تابلو کم‌نور است':'محل مأموریت · '+s.mission.title}</div>
     ${[['person','گفت‌وگو',25,58],['load',street?'چراغ‌های کوچه':'پلاک مصرف‌کننده',51,38],['source','منبع برق',10,83],['cabinet','جعبه‌برق',87,62]].map(([id,title,x,y])=>`<button class="site-hotspot ${s.focus===id?'selected':''}" style="--x:${x}%;--y:${y}%" data-target="${id}" aria-label="${title}"><span>${id==='cabinet'?'⚒':id==='person'?'…':s.tool==='meter'?'V':'⌕'}</span><b>${title}</b></button>`).join('')}
     ${sceneMessage(s)}
   </div>`;
@@ -37,7 +38,8 @@ function wirePanel(s){
 }
 export function renderCabinet(s){
   let content='';
-  if(s.mission.id==='clinic')content=`<p class="cabinet-help">کلید هر مصرف‌کننده را تنظیم کن. هر سه وسیلهٔ ضروری باید روشن باشند.</p><div class="power-budget"><b>${fa(s.power)} / ۱۸ وات</b><meter min="0" max="30" optimum="18" low="1" high="18" value="${s.power}"></meter></div><div class="appliance-list">${appliances.map((p,i)=>`<button data-load="${i}" aria-pressed="${s.loads[i]}"><span><b>${p.name}</b><small>${fa(p.power)} وات · ${p.essential?'ضروری':'غیرضروری'}</small></span><span class="load-toggle">${s.loads[i]?'روشن':'خاموش'}</span></button>`).join('')}</div>`;
+  if(s.shop)content=shopWorkbench(s);
+  else if(s.mission.id==='clinic')content=`<p class="cabinet-help">کلید هر مصرف‌کننده را تنظیم کن. هر سه وسیلهٔ ضروری باید روشن باشند.</p><div class="power-budget"><b>${fa(s.power)} / ۱۸ وات</b><meter min="0" max="30" optimum="18" low="1" high="18" value="${s.power}"></meter></div><div class="appliance-list">${appliances.map((p,i)=>`<button data-load="${i}" aria-pressed="${s.loads[i]}"><span><b>${p.name}</b><small>${fa(p.power)} وات · ${p.essential?'ضروری':'غیرضروری'}</small></span><span class="load-toggle">${s.loads[i]?'روشن':'خاموش'}</span></button>`).join('')}</div>`;
   else {
     if(['gate','street','station'].includes(s.mission.id))content+=wirePanel(s);
     if(['shop','station'].includes(s.mission.id))content+=`<div class="resistor-slot"><span>مقاومت نصب‌شده</span><b dir="ltr">${s.board.parts.find(p=>p.type==='resistor').value} Ω</b></div><p class="cabinet-help">یک مقاومت از کیف قطعات انتخاب و جایگزین کن.</p><div class="spare-parts">${replacements.map(p=>`<button data-resistor="${p.value}" ${s.credits<p.cost?'disabled':''}><b dir="ltr">${p.value} Ω</b><small>${fa(p.cost)} اعتبار</small></button>`).join('')}</div>`;
