@@ -5,6 +5,7 @@ import {Schematics} from './lessons/Schematics.js';
 
 const $=id=>document.getElementById(id);
 const ui={svg:$('circuitSvg'),controls:$('levelControls'),feedback:$('feedbackText'),status:$('statusChip'),next:$('nextButton')};
+const boardZoom=$('boardZoom'),zoomValue=$('zoomValue');
 const diagrams=new Schematics(ui.svg);
 const completed=new Set();
 let current=0,session,score=0,toastTimer;
@@ -12,7 +13,13 @@ const builder=new CircuitBuilder(ui.svg,ui.controls,()=>{
  if(!builder.active)return;
  setStatus(!!builder.result?.ok,builder.message,'میز طراحی');
  $('movesValue').textContent=builder.moves.toLocaleString('fa-IR');
+ syncBoardZoom();
 },()=>award());
+function syncBoardZoom(){
+ const active=builder.active;
+ boardZoom.hidden=!active;
+ if(active)zoomValue.textContent=`${Math.round((builder.zoom||1)*100).toLocaleString('fa-IR')}٪`;
+}
 
 function setStatus(ok,message,idle='در انتظار پاسخ'){
  ui.status.textContent=ok?'پاسخ تأیید شد':idle;
@@ -20,6 +27,7 @@ function setStatus(ok,message,idle='در انتظار پاسخ'){
  ui.feedback.textContent=message;
  document.querySelector('.feedback-icon').textContent=ok?'✅':'💡';
  ui.next.hidden=!ok;
+ $('undoButton').disabled=!(builder.active&&builder.history?.length);
 }
 function award(){
  const level=levels[current];
@@ -44,6 +52,8 @@ function invalidate(){
 function loadLevel(index){
  if(!levels[index])return;
  builder.active=false;current=index;session=new LessonSession(levels[index]);
+ $('undoButton').disabled=true;
+ boardZoom.hidden=true;
  const level=session.level;
  $('levelTitle').textContent=level.title;$('levelDescription').textContent=level.description;$('levelEyebrow').textContent=level.subtopic;$('lessonNumber').textContent=level.number;
  $('progressLabel').textContent=`مرحله ${level.number} از ${levels.length.toLocaleString('fa-IR')}`;
@@ -58,6 +68,7 @@ function loadLevel(index){
  $('movesValue').textContent='۰';
  renderNavigation();
  if(level.type==='builder'){builder.load(level.mission);return;}
+ ui.svg.setAttribute('viewBox','0 0 900 440');
  renderAnswers();diagrams.draw(level,session.answers,session.basic);invalidate();
 }
 function submit(){
@@ -87,6 +98,8 @@ function interact(e){
 ui.svg.addEventListener('click',interact);
 ui.svg.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&(e.target.closest('[data-gap]')||e.target.closest('[data-switch]'))){e.preventDefault();interact(e);}});
 $('resetButton').addEventListener('click',()=>loadLevel(current));
+$('undoButton').addEventListener('click',()=>{if(builder.active)builder.action('undo');});
+$('boardZoom').addEventListener('click',e=>{const button=e.target.closest('[data-board-tool]');if(button&&builder.active)builder.action(button.dataset.boardTool);});
 $('hintButton').addEventListener('click',()=>{session.hinted=true;if(builder.active){builder.message=session.level.hint;builder.render();}else{ui.feedback.textContent=session.level.hint;}});
 ui.next.addEventListener('click',()=>{if(current<levels.length-1)loadLevel(current+1);else{clearTimeout(toastTimer);$('toast').textContent='از منوی سمت چپ می‌توانی تمرین دیگری انتخاب کنی.';$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2500);}});
 document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='r')loadLevel(current);if(e.key.toLowerCase()==='h')$('hintButton').click();});
