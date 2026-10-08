@@ -1,0 +1,24 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="src/city/city.css"><link rel="stylesheet" href="src/city/town.css"><link rel="stylesheet" href="src/city/adventure.css"><link rel="stylesheet" href="src/city/scene-messages.css"><link rel="stylesheet" href="src/city/shop.css"><link rel="stylesheet" href="src/city/street.css"><link rel="stylesheet" href="src/city/circuit-popup.css"></head><body class="city-active" style="padding:14px;background:#edf4e6"><div id="root"></div><pre id="qa" style="direction:ltr"></pre><script type="module">
+import {CityGame} from './src/city/CityGame.js';
+import {CityProgress} from './src/city/Progress.js';
+const assert=(v,m)=>{if(!v)throw Error(m)};
+try{
+ const g=new CityGame(document.querySelector('#root'));g.progress=new CityProgress({getItem:()=>null,setItem:()=>{}},'ui-test');g.setActive(true);g.progress.complete('gate',0);g.progress.complete('shop',0);g.start(2);
+ const click=sel=>{const el=g.el(sel);assert(el,'missing '+sel);el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))};
+ click('[data-target="cabinet"]');click('[data-action="expand-circuit"]');assert(g.el('dialog')?.open,'modal is open');assert(g.root.querySelectorAll('.cabinet-panel').length===1,'one live board only');
+ const s=g.sessions.get(2),count=s.board.wires.length;
+ click('dialog [data-wire="0"]');assert(s.board.wires.length===count-1,'edit persists');assert(g.el('dialog')?.open,'modal stays open after edit');
+ g.el('dialog').dispatchEvent(new Event('cancel',{cancelable:true}));assert(!g.el('dialog'),'cancel closes modal');assert(document.activeElement.dataset.action==='expand-circuit','focus restored');
+ click('[data-action="expand-circuit"]');click('dialog [data-action="test"]');assert(!g.el('dialog'),'test returns to scene');assert(g.el('.adventure-site .scene-test-result'),'result is on scene');assert(!g.el('.cabinet-panel .scene-test-result'),'no duplicate in panel');assert(g.el('.scene-test-result').classList.contains('result-error'),'failure color');
+ g.start(1);click('[data-target="cabinet"]');click('[data-action="expand-circuit"]');
+ click('dialog [data-shop-point="p1:0"]');click('dialog [data-probe="black"]');click('dialog [data-shop-point="p1:1"]');
+ assert(Math.abs(g.sessions.get(1).shop.voltage-12)<.01,'shop probes work inside modal');
+ click('[data-action="close-circuit"]');g.start(2);
+ click('[data-action="restart"]');click('[data-target="cabinet"]');
+ const query=new URLSearchParams(location.search);
+ if(query.has('mobile')){document.body.style.width='390px';const style=document.createElement('style');style.textContent='.circuit-dialog{width:378px;max-width:378px}';document.head.append(style);}
+ if(query.has('popup'))click('[data-action="expand-circuit"]');else click('[data-action="test"]');
+ document.querySelector('#qa').textContent='PASS: native modal, edits, cancel, focus, result placement';
+ window.scrollTo(0,0);
+}catch(e){document.querySelector('#qa').textContent='FAIL: '+e.stack}
+</script></body></html>

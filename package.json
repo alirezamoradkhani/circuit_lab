@@ -5,7 +5,7 @@
   "description": "An educational electric circuits game MVP",
   "scripts": {
     "start": "npx serve .",
-    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs"
+    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs"
   },
   "type": "module"
 }

@@ -18,7 +18,7 @@ export class ShopInteractions {
     const d=this.drag;if(!d||d.id!==e.pointerId)return;
     if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>7)d.moved=true;
     if(!d.moved)return;e.preventDefault();
-    if(!this.ghost){this.ghost=document.createElement('div');this.ghost.className='shop-drag-ghost';this.ghost.textContent=d.kind.startsWith('street:')?'سیم':d.kind.startsWith('probe:')?(d.kind.endsWith('red')?'🔴':'⚫'):d.kind.startsWith('spare:')?d.kind.split(':')[1]+' Ω':'مقاومت';document.body.append(this.ghost);}
+    if(!this.ghost){this.ghost=document.createElement('div');this.ghost.className='shop-drag-ghost';this.ghost.textContent=d.kind.startsWith('street:')?'سیم':d.kind.startsWith('probe:')?(d.kind.endsWith('red')?'🔴':'⚫'):d.kind.startsWith('spare:')?d.kind.split(':')[1]+' Ω':'مقاومت';(d.el.closest('dialog')||document.body).append(this.ghost);}
     this.ghost.style.left=e.clientX+'px';this.ghost.style.top=e.clientY+'px';
     const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-shop-drop]');
     this.root.querySelectorAll('.shop-drop-hover').forEach(el=>el.classList.remove('shop-drop-hover'));drop?.classList.add('shop-drop-hover');

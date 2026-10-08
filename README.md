@@ -121,3 +121,5 @@ The alley has three independently simulated lamps: one healthy, one open-circuit
 Victory requires repairing both faults, restoring three full-brightness branches, testing with exactly one branch isolated, then reconnecting it and performing the final test. Editing wiring, replacing a lamp, or changing the main switch invalidates previous verification. This uses the DC solver; visual brightness follows calculated lamp power. Regression coverage: `tests/street.test.mjs`.
 
 A direct replacement wire is also accepted when the old connection carries no current. Removing that unused connection is optional; full brightness leads to the explicit branch-isolation test without a failed-repair penalty.
+
+Mission UI: the expand control opens a native modal with the same editable circuit. Escape or Close restores focus to its opener. Running a test closes the popup and displays a color-coded result on the mission scene. `tests/city-ui.browser.html` exercises modal editing, cancel/focus restoration, shop probes and scene feedback in a browser using disposable progress storage; `?popup=1` previews the expanded view.
