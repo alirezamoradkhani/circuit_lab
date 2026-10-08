@@ -1,0 +1,11 @@
+node_modules/
+.git/
+.test-artifacts/
+tests/
+docs/
+scripts/
+README.md
+package*.json
+run.bat
+wrangler.jsonc
+.gitignore

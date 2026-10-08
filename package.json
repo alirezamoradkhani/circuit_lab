@@ -2,10 +2,17 @@
   "name": "circuit-lab-web",
   "version": "1.0.0",
   "private": true,
-  "description": "An educational electric circuits game MVP",
+  "description": "Electric circuit lessons and a story-driven 3D puzzle adventure",
   "scripts": {
-    "start": "npx serve .",
-    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs"
+    "start": "node scripts/serve.mjs",
+    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/workshop.test.mjs",
+    "vendor": "node scripts/vendor-three.mjs"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "playwright": "1.64.0"
+  }
 }
