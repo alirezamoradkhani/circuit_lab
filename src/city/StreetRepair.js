@@ -36,6 +36,7 @@ export class StreetRepair {
   }
   inspect(id){
     const s=this.session,r=this.readings().find(p=>p.id===id);if(!r)return;
+    this.selected=id;
     const n=this.lamps.findIndex(p=>p.id===id)+1;
     s.note(s.tool==='meter'?`چراغ ${n}: ولتاژ دو سر سوکت ${r.voltage===null?'نامشخص':r.voltage.toFixed(2)+' V'}؛ جریان لامپ ${r.current.toFixed(2)} A.`:`چراغ ${n}: ۱۲ ولت، ۱۲ اهم؛ جریان نامی ۱ آمپر. برای تشخیص خرابی، ولتاژ سوکت و جریان را مقایسه کن.`);
   }

@@ -1,9 +1,9 @@
 import {renderTown} from './scene.js';
 import {adventures} from './adventureData.js';
-import {AdventureSession} from './AdventureSession.js?v=street3';
-import {renderAdventure} from './AdventureView.js?v=street3';
+import {AdventureSession} from './AdventureSession.js?v=street4';
+import {renderAdventure} from './AdventureView.js?v=street4';
 import {CityProgress} from './Progress.js';
-import {ShopInteractions} from './ShopInteractions.js?v=street3';
+import {ShopInteractions} from './ShopInteractions.js?v=street4';
 
 export class CityGame {
   constructor(root){
@@ -15,6 +15,7 @@ export class CityGame {
     this.shopInteractions=new ShopInteractions(root,()=>this.active?this.sessions.get(this.index):null,()=>this.renderGame());
     root.addEventListener('click',e=>this.handle(e));
     root.addEventListener('keydown',e=>{
+      if(e.key==='Escape'&&this.sessions.get(this.index)?.street&&this.sessions.get(this.index)?.panel){const s=this.sessions.get(this.index);s.panel=false;s.messageTarget=null;this.renderGame();this.el('[data-target="cabinet"]')?.focus({preventScroll:true});return;}
       if(e.key==='Escape'&&this.sessions.get(this.index)?.messageTarget){this.sessions.get(this.index).messageTarget=null;this.renderGame();this.el(`[data-target="${this.sessions.get(this.index).focus}"]`)?.focus({preventScroll:true});}
       if(['Enter',' '].includes(e.key)&&e.target.matches('svg [role="button"]')){e.preventDefault();this.handle(e);}
     });
@@ -40,10 +41,13 @@ export class CityGame {
     this.root.scrollIntoView({block:'start'});
   }
   renderGame(){
+    const boardScroll=this.el('.street-board-scroll')?.scrollLeft||0;
     const notesOpen=!!this.el('.field-notes')?.open;
     const panelScroll=this.el('.cabinet-panel')?.scrollTop||0;
+    this.el('[data-stage]').classList.toggle('street-mode',!!this.sessions.get(this.index).street);
     this.el('[data-stage]').innerHTML=renderAdventure(this.sessions.get(this.index));
     this.el('.field-notes').open=notesOpen;
+    if(this.el('.street-board-scroll'))this.el('.street-board-scroll').scrollLeft=boardScroll;
     if(this.el('.cabinet-panel'))this.el('.cabinet-panel').scrollTop=panelScroll;
   }
   showMap(){
@@ -52,7 +56,7 @@ export class CityGame {
   }
   handle(e){
     if(!this.active)return;
-    const button=e.target.closest('[data-mission],[data-action],[data-tool],[data-target],[data-pin],[data-wire],[data-resistor],[data-load],[data-probe],[data-shop-point],[data-shop-spare],[data-shop-action],[data-street-inspect],[data-street-replace],[data-street-isolate],[data-street-cable]');
+    const button=e.target.closest('[data-mission],[data-action],[data-tool],[data-target],[data-pin],[data-wire],[data-resistor],[data-load],[data-probe],[data-shop-point],[data-shop-spare],[data-shop-action],[data-street-inspect],[data-street-replace],[data-street-isolate],[data-street-cable],[data-street-measure]');
     if(!button||button.disabled)return;
     if(button.dataset.mission!==undefined){this.start(Number(button.dataset.mission));return;}
     const action=button.dataset.action;
@@ -72,6 +76,7 @@ export class CityGame {
       this.renderGame();this.el('[data-stage]').querySelector(selector)?.focus({preventScroll:true});return;
     }
     if(s.street){
+      if(button.dataset.streetMeasure){s.tool="meter";s.street.inspect(button.dataset.streetMeasure);}
       if(button.dataset.streetInspect)s.street.inspect(button.dataset.streetInspect);
       if(button.dataset.streetReplace)s.street.replace(button.dataset.streetReplace);
       if(button.dataset.streetIsolate)s.street.isolate(button.dataset.streetIsolate);
@@ -92,9 +97,11 @@ export class CityGame {
     s.messageTarget=button.dataset.target||(button.dataset.tool?'source':action==='hint'?'person':'cabinet');
     if(button.dataset.streetInspect)s.messageTarget=s.panel?'cabinet':'load';
     if(action==='close-panel')s.messageTarget=null;
+    if(s.street&&button.dataset.tool&&s.street.selected)s.street.inspect(s.street.selected);
     if(s.shop&&button.dataset.tool==='meter'){s.panel=true;s.messageTarget=null;}
     const focusSelector=Object.entries(button.dataset).map(([key,value])=>`[data-${key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}="${value}"]`).join('');
     this.renderGame();this.renderMap();
+    if(s.street&&(button.dataset.target==='cabinet'||action==='close-panel'))this.el('.street-stage')?.scrollIntoView({block:'start'});
     this.el('[data-stage]').querySelector(focusSelector)?.focus({preventScroll:true});
   }
 }

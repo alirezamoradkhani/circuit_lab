@@ -3,9 +3,11 @@ import {appliances,replacements} from './adventureData.js';
 import {character} from './characters.js';
 import {sceneMessage} from './SceneMessage.js';
 import {shopWorkbench} from './ShopWorkbench.js?v=shop3';
-import {streetWorkbench} from './StreetWorkbench.js?v=street3';
+import {streetScene} from './StreetScene.js?v=street4';
+import {streetWorkbench} from './StreetWorkbench.js?v=street4';
 const fa=n=>n.toLocaleString('fa-IR');
 export function renderSite(s){
+  if(s.street)return streetScene(s);
   const street=s.mission.id==='street';
   const art=street?[250,410,570].map((x,i)=>`<g><path d="M${x} 340V110Q${x} 85 ${x+25} 85" fill="none" stroke="#486975" stroke-width="10"/><path style="fill:${s.street.readings()[i].brightness>.05?'#ffe184':'#70878a'}" class="town-light" d="M${x+10} 85h40l10 22h-60Z"/><path style="opacity:${s.street.readings()[i].brightness*.65}" class="light-beam" d="M${x-5} 107L${x-55} 340H${x+100}L${x+55} 107Z"/></g>`).join(''):buildingArt(s.mission.id).replace('<svg ','<svg x="180" y="25" width="460" height="380" ');
   return `<div class="adventure-site site-${s.mission.id} ${s.won?'powered restored':''} ${s.tripped?'power-tripped':''}" ${s.shop?`style="--sign-light:${s.shop.brightness}"`:''}>
@@ -54,7 +56,7 @@ export function renderCabinet(s){
 export function renderAdventure(s){
   return `<header class="adventure-heading"><div><span class="eyebrow">مأموریت ${fa(s.index+1)} · ${s.mission.skill}</span><h1 tabindex="-1">${s.mission.title}</h1><p>${s.mission.objective}</p></div><div class="adventure-wallet"><b>${fa(s.credits)}</b><small>اعتبار قطعات</small></div></header>
     <div class="adventure-toolbar" aria-label="کیف ابزار"><div class="tool-choice">${[['inspect','⌕','بررسی'],['meter','V','مولتی‌متر']].map(([id,icon,title])=>`<button data-tool="${id}" aria-pressed="${s.tool===id}"><b>${icon}</b> ${title}</button>`).join('')}</div><button data-action="hint" title="راهنمای مرحله‌ای" aria-label="راهنمای مرحله‌ای">?</button><button data-action="restart" title="شروع دوباره" aria-label="شروع دوباره">↻</button><button class="energize" data-action="test" ${s.won?'disabled':''}>⚡ ${s.street?(s.street.verified&&!s.street.isolated.size?'آزمایش نهایی':s.street.isolated.size?'آزمایش استقلال شاخه‌ها':'آزمایش روشنایی'):'وصل و آزمایش برق'}</button></div>
-    <div class="adventure-scene ${s.panel&&!s.won?'with-cabinet':''}">${renderSite(s)}${s.panel&&!s.won?renderCabinet(s):''}</div>
+    <div class="adventure-scene ${s.street?'street-stage':s.panel&&!s.won?'with-cabinet':''}">${s.street?(s.panel&&!s.won?streetWorkbench(s):streetScene(s)):renderSite(s)+(s.panel&&!s.won?renderCabinet(s):'')}</div>
     ${s.won?`<section class="adventure-victory" role="status"><div><span class="earned-stars">${'★'.repeat(s.stars)}${'☆'.repeat(3-s.stars)}</span><h2>این بخش شهر دوباره زنده شد</h2><p>${s.mission.lesson}</p><small>${fa(s.mistakes)} آزمایش ناموفق · ${fa(s.hints)} راهنما · ${fa(s.spent)} اعتبار مصرف‌شده</small></div><button data-action="next">${s.index===4?'جشن روشنایی شهر':'رفتن به مأموریت بعد'} ←</button></section>`:''}
     <details class="field-notes"><summary>دفتر عیب‌یابی · ${fa(s.notes.length)} یادداشت</summary>${s.notes.length?'<ul>'+s.notes.map(n=>`<li>${n}</li>`).join('')+'</ul>':'<p>با بررسی پلاک‌ها و اندازه‌گیری، شواهد اینجا ثبت می‌شوند.</p>'}<small>مدل آموزشی کم‌ولتاژ DC؛ امتیاز بهتر با آزمایش ناموفق و راهنمای کمتر. بازگشت به خیابان تعمیر نیمه‌تمام را نگه می‌دارد.</small></details>`;
 }
