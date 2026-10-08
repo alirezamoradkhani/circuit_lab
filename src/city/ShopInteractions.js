@@ -10,6 +10,7 @@ export class ShopInteractions {
   }
   begin(e){
     this.ignoreClick=false;const el=e.target.closest('[data-shop-drag]');
+    if(this.getSession()?.street&&this.getSession()?.tool==='meter')return;
     if(e.button!==0||!el||el.disabled||!(this.getSession()?.shop||this.getSession()?.street))return;
     this.drag={kind:el.dataset.shopDrag,id:e.pointerId,x:e.clientX,y:e.clientY,el,moved:false};
     el.setPointerCapture(e.pointerId);

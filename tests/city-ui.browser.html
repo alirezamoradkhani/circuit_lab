@@ -6,6 +6,10 @@ try{
  const g=new CityGame(document.querySelector('#root'));g.progress=new CityProgress({getItem:()=>null,setItem:()=>{}},'ui-test');g.setActive(true);g.progress.complete('gate',0);g.progress.complete('shop',0);g.start(2);
  const click=sel=>{const el=g.el(sel);assert(el,'missing '+sel);el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))};
  click('[data-target="cabinet"]');click('[data-action="expand-circuit"]');assert(g.el('dialog')?.open,'modal is open');assert(g.root.querySelectorAll('.cabinet-panel').length===1,'one live board only');
+ click('dialog [data-tool="meter"]');click('dialog [data-measure-part="p4"]');
+ assert(g.el('dialog .component-meter output').textContent==='12.00 V','component voltage');
+ assert(g.el('dialog .component-meter').textContent.includes('0.00 A'),'failed lamp current');
+ click('dialog [data-tool="inspect"]');
  const s=g.sessions.get(2),count=s.board.wires.length;
  click('dialog [data-wire="0"]');assert(s.board.wires.length===count-1,'edit persists');assert(g.el('dialog')?.open,'modal stays open after edit');
  g.el('dialog').dispatchEvent(new Event('cancel',{cancelable:true}));assert(!g.el('dialog'),'cancel closes modal');assert(document.activeElement.dataset.action==='expand-circuit','focus restored');
@@ -13,6 +17,7 @@ try{
  g.start(1);click('[data-target="cabinet"]');click('[data-action="expand-circuit"]');
  click('dialog [data-shop-point="p1:0"]');click('dialog [data-probe="black"]');click('dialog [data-shop-point="p1:1"]');
  assert(Math.abs(g.sessions.get(1).shop.voltage-12)<.01,'shop probes work inside modal');
+ click('dialog [data-tool="meter"]');click('dialog [data-measure-part="p3"]');assert(g.el('dialog .component-meter output').textContent==='2.40 V','shop resistor measurement');
  click('[data-action="close-circuit"]');g.start(2);
  click('[data-action="restart"]');click('[data-target="cabinet"]');
  const query=new URLSearchParams(location.search);

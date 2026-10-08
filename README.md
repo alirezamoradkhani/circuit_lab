@@ -123,3 +123,5 @@ Victory requires repairing both faults, restoring three full-brightness branches
 A direct replacement wire is also accepted when the old connection carries no current. Removing that unused connection is optional; full brightness leads to the explicit branch-isolation test without a failed-repair penalty.
 
 Mission UI: the expand control opens a native modal with the same editable circuit. Escape or Close restores focus to its opener. Running a test closes the popup and displays a color-coded result on the mission scene. `tests/city-ui.browser.html` exercises modal editing, cancel/focus restoration, shop probes and scene feedback in a browser using disposable progress storage; `?popup=1` previews the expanded view.
+
+Direct component measurements: select the V tool in the mission toolbar or cabinet header, then select a component body. The compact readout shows terminal voltage and calculated load current. Wiring edits are suppressed in meter mode. Measurements remain live after repairs, and open/floating terminals or shorts are reported explicitly.
