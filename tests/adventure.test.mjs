@@ -21,12 +21,14 @@ const resistance=broke.board.parts.find(p=>p.type==='resistor').value;
 replaceShop(broke,12);assert.equal(broke.board.parts.find(p=>p.type==='resistor').value,resistance,'cannot spend unavailable credit');assert.equal(broke.credits,5);
 
 const street=new AdventureSession(2);
-assert.ok(Math.abs(street.current-1/3)<1e-9);
-assert.deepEqual(Object.values(measureCircuit(street.board).volts).map(v=>Math.round(v)),[4,4,4]);
-while(street.board.wires.length)street.removeWire(0);
-street.pin('p1:0');street.pin('p2:0');
-for(const p of ['p3','p4','p5']){street.pin('p2:1');street.pin(p+':0');street.pin(p+':1');street.pin('p1:1');}
-assert.equal(street.test(),true);assert.equal(street.current,3);assert.equal(street.credits,16);
+assert.ok(Math.abs(street.current-1.5)<1e-9);
+assert.deepEqual(street.street.readings().map(r=>[r.voltage,r.current]),[[12,1],[12,0],[6,.5]]);
+street.street.replace('p4');street.street.removeCable();
+street.pin('p2:1');street.pin('p5:0');
+assert.equal(street.test(),false,'full light alone is not victory');
+street.street.isolate('p3');assert.equal(street.test(),false);
+assert.equal(street.street.verified,true);
+street.street.isolate('p3');assert.equal(street.test(),true);assert.equal(street.current,3);
 const short=new AdventureSession(0);short.pin('p2:1');short.pin('p1:1');assert.equal(measureCircuit(short.board).short,true);assert.equal(short.test(),false);assert.equal(short.tripped,true);
 short.removeWire(short.board.wires.length-1);short.resetFuse();assert.equal(short.current,0);
 

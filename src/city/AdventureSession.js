@@ -2,6 +2,7 @@ import {Board,evaluate} from '../builder/Board.js';
 import {cityMissions,seedMission} from './missions.js';
 import {adventures,appliances,replacements} from './adventureData.js';
 import {measureCircuit} from './CircuitMeter.js?v=shop1';
+import {StreetRepair} from './StreetRepair.js';
 import {ShopRepair} from './ShopRepair.js';
 
 // Game state and electrical rules live outside the DOM so repairs can be tested.
@@ -14,6 +15,7 @@ export class AdventureSession {
     this.tripped=false;this.won=false;this.notes=[];this.loads=[true,false,false,true];
     this.message=this.mission.request;
     if(this.mission.id==='shop')this.shop=new ShopRepair(this);
+    if(this.mission.id==='street')this.street=new StreetRepair(this);
   }
   get power(){return appliances.reduce((sum,p,i)=>sum+(this.loads[i]?p.power:0),0);}
   get current(){
@@ -37,6 +39,7 @@ export class AdventureSession {
     if(this.mission.id==='clinic')return `بارهای انتخاب‌شده: ${this.power} W؛ جریان ${this.tripped?'۰ (محافظ قطع است)':(this.power/12).toFixed(2)} A؛ ظرفیت ۱۸ W.`;
     if(this.tripped)return 'محافظ قطع است؛ ابتدا آن را بازنشانی کن.';
     const measured=measureCircuit(this.board);if(measured.short)return 'اتصال کوتاه در منبع؛ مسیر سیم‌ها را اصلاح کن.';
+    if(this.street)return this.street.readings().map((r,i)=>`چراغ ${i+1}: ${r.voltage===null?'نامشخص':r.voltage.toFixed(2)+' V'} / ${r.current.toFixed(2)} A`).join('؛ ');
     const lamps=this.board.parts.filter(p=>p.type==='lamp').map(p=>measured.volts[p.id]===null?'شناور':measured.volts[p.id].toFixed(2)+' V');
     return `جریان منبع: ${measured.current.toFixed(2)} A؛ ولتاژ چراغ‌ها: ${lamps.join(' / ')}.`;
   }
@@ -60,16 +63,17 @@ export class AdventureSession {
     if(start.split(':')[0]===id.split(':')[0]){this.message='دو سر یک قطعه را با سیم دور نزن؛ پایانهٔ قطعهٔ دیگر را انتخاب کن.';return;}
     if(this.credits<2){this.message='برای یک سیم به ۲ اعتبار نیاز داری؛ مأموریت را از نو شروع کن.';return;}
     const before=this.board.wires.length;this.board.connect(start,id);
-    if(this.board.wires.length>before){this.spend(2);this.message='سیم نصب شد. برای برداشتن سیم روی خط آن بزن.';}
+    if(this.board.wires.length>before){this.street?.invalidate();this.spend(2);this.message='سیم نصب شد. برای برداشتن سیم روی خط آن بزن.';}
   }
-  removeWire(index){if(this.won)return;if(this.board.wires[index]){this.board.wires.splice(index,1);this.pending=null;this.message='سیم برداشته شد؛ حالا می‌توانی مسیر درست را بسازی.';}}
+  removeWire(index){if(this.won)return;if(this.board.wires[index]){this.board.wires.splice(index,1);this.street?.invalidate();this.pending=null;this.message='سیم برداشته شد؛ حالا می‌توانی مسیر درست را بسازی.';}}
   toggleLoad(index){if(this.won||!appliances[index])return;this.loads[index]=!this.loads[index];this.message=`توان انتخاب‌شده: ${this.power} از ۱۸ وات.`;}
-  toggleSwitch(){if(this.won)return;const p=this.board.parts.find(p=>p.type==='switch');p.closed=!p.closed;this.message=p.closed?'کلید بسته شد.':'کلید باز شد؛ می‌توانی اثر آن را با مولتی‌متر بررسی کنی.';}
+  toggleSwitch(){if(this.won)return;const p=this.board.parts.find(p=>p.type==='switch');p.closed=!p.closed;this.street?.invalidate();this.message=p.closed?'کلید بسته شد.':'کلید باز شد؛ می‌توانی اثر آن را با مولتی‌متر بررسی کنی.';}
   hint(){if(this.won)return;this.message=this.mission.hints[Math.min(this.hints,2)];this.hints=Math.min(this.hints+1,3);}
   resetFuse(){this.tripped=false;this.message='محافظ بازنشانی شد. پیش از آزمایش دوباره، علت قطع‌شدن را رفع کن.';}
   test(){
     if(this.won)return true;
     if(this.tripped){this.message='محافظ قطع است؛ ابتدا بازنشانی کن.';return false;}
+    if(this.street)return this.street.test();
     let ok=false,reason='';
     if(this.mission.id==='clinic'){
       this.tripped=this.power>18;ok=!this.tripped&&this.loads.slice(0,3).every(Boolean);
