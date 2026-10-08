@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/workshop.test.mjs",
-    "vendor": "node scripts/vendor-three.mjs"
+    "vendor": "node scripts/vendor-three.mjs",
+    "test:browser": "node tests/workshop.browser.mjs"
   },
   "type": "module",
   "dependencies": {
