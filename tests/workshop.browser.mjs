@@ -51,7 +51,19 @@ try {
  const mobile=await pageFor({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1},{version:1,started:true,energy:0});
  const m=mobile.page;
  await m.waitForSelector('.story-playing');await m.screenshot({path:'.test-artifacts/workshop-mobile.png'});
+ await action(m,'help');
+ assert.match(await m.locator('.story-dialog h2').innerText(),/چرخ/);
+ await m.locator('.story-help-details summary').first().tap();
+ assert.match(await m.locator('.story-help-details[open]').innerText(),/ابزار دست/);
+ assert.equal(await m.locator('.story-dialog').evaluate(el=>el.scrollWidth>el.clientWidth),false,'Help does not overflow on mobile');
+ await m.screenshot({path:'.test-artifacts/workshop-help-mobile.png'});
+ await action(m,'close');
  await pull(m);
+ await action(m,'help');
+ assert.match(await m.locator('.story-dialog h2').innerText(),/انرژی/,'Help changes after opening the aisle');
+ await action(m,'hint');
+ assert.match(await m.locator('.story-bubble').innerText(),/پریز/);
+
  await action(m,'hand');
  await object(m,'reel');await waitState(m,'s.reel===true');
  await wire(m,'mains','latch');await waitState(m,'s.door===true');
@@ -83,7 +95,14 @@ try {
  await waitState(ip,'Math.abs(s.player.x)<0.2&&Math.abs(s.player.z-2.6)<0.2');
  const crate=await project(-1.8,.85,-.02);await ip.mouse.click(crate.x,crate.y);
  await waitState(ip,'s.cart===1');
- await action(ip,'help');await action(ip,'hint');assert.equal(await ip.locator('.story-dialog').isVisible(),false);
+ await action(ip,'cable');await object(ip,'battery');
+ await action(ip,'help');
+ assert.match(await ip.locator('.story-dialog h2').innerText(),/کرکره/);
+ await action(ip,'hint');assert.equal(await ip.locator('.story-dialog').isVisible(),false);
+ assert.equal(await ip.locator('[data-story-object="battery"]').evaluate(el=>el.classList.contains('selected')),true,'Help preserves pending cable endpoint');
+ await ip.keyboard.press('KeyH');
+ assert.match(await ip.locator('.story-bubble').innerText(),/ابزار کابل/,'Second hint gives concrete steps');
+
  await input.context.close();
  console.log('PASS input: WASD, raycast floor walking, physical cart selection and contextual hint.');
  const touch=await pageFor({viewport:{width:390,height:844},isMobile:true,hasTouch:true},{version:1,started:true});

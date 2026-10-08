@@ -43,10 +43,10 @@ export class WorkshopGame {
     if(action==='lab'){this.hud.closeDialog();document.querySelector('[data-mode="lab"]').click();return;}
     if(action==='restart'){
       this.hud.closeDialog();this.state=freshState();this.intro=0;this.time=0;
-      this.movement.clear();this.interactions.setTool('hand');this.hud.bubble.hidden=true;this.save();return;
+      this.movement.clear();this.interactions.setTool('hand');this.interactions.hints.reset();this.hud.bubble.hidden=true;this.save();return;
     }
     if(action==='recover'){
-      this.hud.closeDialog();resetObjects(this.state);this.movement.clear();this.interactions.setTool('hand');this.save();
+      this.hud.closeDialog();resetObjects(this.state);this.interactions.hints.reset();this.movement.clear();this.interactions.setTool('hand');this.save();
       this.hud.message('وسایل بازچینی شدند؛ چیزهایی که پیدا کرده‌ای همراهت هستند.');return;
     }
     if(['help','reset','bag','circuit'].includes(action)){

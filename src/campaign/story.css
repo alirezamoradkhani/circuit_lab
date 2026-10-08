@@ -125,3 +125,14 @@ body.story-theme{background:#343a33;color:#eee3c7;overflow:hidden}
  .story-joystick{bottom:96px}
  .story-context,.story-unplug{bottom:91px}
 }
+
+.story-hint-note{background:#d6cba5;border-inline-start:3px solid #77754e;border-radius:6px;padding:12px 15px;margin:16px 0}
+.story-hint-note p{margin:5px 0 0}
+.story-help-details{border-bottom:1px solid #958b6244;padding:4px 0}
+.story-help-details summary{cursor:pointer;min-height:44px;display:list-item;align-content:center;font-size:14px;font-weight:700;padding:10px 4px}
+.story-help-details li{margin-block:10px;line-height:1.9}
+.story-help-details ol,.story-help-details ul{padding-inline-start:24px}
+.story-help-details summary:focus-visible{outline:2px solid #686c42;outline-offset:2px;border-radius:4px}
+
+.story-help-details summary{background:transparent;color:#444a34}
+.story-help-details summary:hover,.story-help-details summary:focus-visible{background:#d6cba5;color:#343d2c}

@@ -1,7 +1,8 @@
+import {HintProgress} from './hints.js';
 import {connect,disconnect,interact,measure} from './actions.js';
 import {NAMES,available,walkPoint,distance,PORTS} from './layout.js';
 export class InteractionController {
-  constructor(game){this.game=game;this.tool='hand';this.selected=null;this.hints=0;}
+  constructor(game){this.game=game;this.tool='hand';this.selected=null;this.hints=new HintProgress();}
   setTool(tool){
     this.tool=tool;this.selected=null;this.game.hud.setTool(tool);
     this.game.movement.path=[];this.game.movement.arrive=null;
@@ -37,12 +38,6 @@ export class InteractionController {
     if(this.selected){this.result(disconnect(this.game.state,this.selected));this.selected=null;}
   }
   hint(){
-    const g=this.game,s=g.state;this.hints++;
-    const texts=s.cart<1?['ریل‌های زیر چرخ‌دستی را ببین. راه پشتش بسته است.','کنار دستهٔ چرخ‌دستی برو و آن را عقب بکش.']:
-      !s.door?['جعبهٔ کنار کرکره فقط یک لحظه برق می‌خواهد.','با ابزار کابل، باتری رِی را به ضامن وصل کن؛ یا قرقره را برای اتصال پریز بردار.']:
-      !s.receipt?['پاک‌رو کنار میز یک کاغذ جا گذاشته.','رسید روی زمین کنار میز است؛ آن را بردار.']:
-      ['ضامن باز می‌ماند؛ دیگر لازم نیست رِی به آن وصل باشد.','ابزار کابل، سوکت متصل، سپس «جدا کردن کابل». حالا از در برو.'];
-    g.hud.message(texts[Math.min(texts.length-1,this.hints-1)],'info',8);
-    this.selected=s.cart<1?'cart':!s.door?'latch':!s.receipt?'receipt':'exit';
+    this.game.hud.message(this.hints.next(this.game.state),'info',12);
   }
 }

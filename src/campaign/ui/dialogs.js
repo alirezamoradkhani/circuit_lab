@@ -1,3 +1,4 @@
+import {workshopHelp} from './help.js';
 import {icon} from './icons.js';
 import {powered} from '../workshop/electricity.js';
 import {NAMES,LOADS} from '../workshop/layout.js';
@@ -16,6 +17,5 @@ export function dialogContent(kind,s,saved=true){
   if(kind==='complete')return '<span class="story-kicker">مرحلهٔ ۰۱ تمام شد</span><h2>یک در باز شد.<br>یک داستان شروع شد.</h2><p>رد پاک‌رو به کوچه می‌رسد. تو رسید را پیدا کردی و با '+(s.route==='mains'?'کابل بلند تعمیرگاه':'برق خود رِی')+' کرکره را باز کردی.</p>'+
     (s.secret?'<p class="story-reward">♫ یادگاری این مرحله: شیفت صبح</p>':'<p>یک موسیقی کوچک هنوز در تعمیرگاه پنهان است…</p>')+
     '<p class="story-subtle">فعلاً مرحلهٔ اول قابل بازی است؛ مرحلهٔ دوم هنوز پیاده‌سازی نشده.</p><div class="story-dialog-actions"><button data-story-action="restart">دوباره بازی کن</button><button data-story-action="lab">بازگشت به آزمایشگاه</button></div>';
-  return '<span class="story-kicker">دفتر نورا</span><h2>همه‌چیز روی خود صحنه است</h2><ul><li>برای حرکت روی زمین بزن، یا از کلیدهای جهت و WASD استفاده کن.</li><li>روی یک وسیله بزن تا رِی کنارش برود. با E یا دکمهٔ دست با آن کار کن.</li><li>ابزار کابل: یک منبع و یک مصرف‌کننده را انتخاب کن. انتخاب دوبارهٔ همان اتصال، کابل را جدا می‌کند.</li><li>ولت‌متر فقط اندازه می‌گیرد؛ اتصال‌ها را تغییر نمی‌دهد.</li><li>باتری خالی شد؟ با پریز پشت چرخ‌دستی دوباره شارژش کن.</li></ul>'+
-    '<p class="story-subtle">C کابل · M ولت‌متر · Tab کیف · H سرنخ · Escape بازگشت</p><p class="story-subtle">'+(saved?'پیشرفت همین دستگاه خودکار ذخیره می‌شود.':'ذخیره‌سازی مرورگر در دسترس نیست؛ پیشرفت فقط در این نشست می‌ماند.')+'</p><div class="story-dialog-actions"><button data-story-action="hint">سرنخ همین مرحله</button></div>';
+  return workshopHelp(s,saved);
 }
