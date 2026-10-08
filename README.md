@@ -112,3 +112,10 @@ python -m http.server 5173
 رویدادهای کشیدن با ماوس، لمس و قلم را نگه می‌دارند. تست این روند: `node tests/shop.test.mjs`.
 
 
+
+
+### Street repair mission
+
+The alley has three independently simulated lamps: one healthy, one open-circuit lamp, and one dim lamp behind a 12-ohm damaged connection. Use the meter on individual lamps to compare socket voltage and lamp current. Replacing a lamp costs 5 credits, removing the damaged connection costs 3, and drawing a new wire costs 2. Wires support pointer dragging or selecting two terminals; select a wire to remove it.
+
+Victory requires repairing both faults, restoring three full-brightness branches, testing with exactly one branch isolated, then reconnecting it and performing the final test. Editing wiring, replacing a lamp, or changing the main switch invalidates previous verification. This uses the DC solver; visual brightness follows calculated lamp power. Regression coverage: `tests/street.test.mjs`.
