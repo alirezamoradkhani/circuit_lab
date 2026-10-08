@@ -121,5 +121,3 @@ The alley has three independently simulated lamps: one healthy, one open-circuit
 Victory requires repairing both faults, restoring three full-brightness branches, testing with exactly one branch isolated, then reconnecting it and performing the final test. Editing wiring, replacing a lamp, or changing the main switch invalidates previous verification. This uses the DC solver; visual brightness follows calculated lamp power. Regression coverage: `tests/street.test.mjs`.
 
 A direct replacement wire is also accepted when the old connection carries no current. Removing that unused connection is optional; full brightness leads to the explicit branch-isolation test without a failed-repair penalty.
-
-The alley now uses a full-width scene: select a lamp directly to reveal its meter, replacement and branch switch in the bottom dock. Wiring replaces the scene with a separate large workspace; Back or Escape returns to the alley. On narrow screens the board pans horizontally and keeps its position across actions, preserving readable terminals instead of shrinking them into a sidebar.

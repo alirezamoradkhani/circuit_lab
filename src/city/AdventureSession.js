@@ -2,7 +2,7 @@ import {Board,evaluate} from '../builder/Board.js';
 import {cityMissions,seedMission} from './missions.js';
 import {adventures,appliances,replacements} from './adventureData.js';
 import {measureCircuit} from './CircuitMeter.js?v=shop1';
-import {StreetRepair} from './StreetRepair.js?v=street4';
+import {StreetRepair} from './StreetRepair.js?v=street3';
 import {ShopRepair} from './ShopRepair.js';
 
 // Game state and electrical rules live outside the DOM so repairs can be tested.
