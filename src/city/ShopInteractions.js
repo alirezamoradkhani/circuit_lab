@@ -10,7 +10,7 @@ export class ShopInteractions {
   }
   begin(e){
     this.ignoreClick=false;const el=e.target.closest('[data-shop-drag]');
-    if(this.getSession()?.street&&this.getSession()?.tool==='meter')return;
+    if(this.getSession()?.tool==='meter'&&!el?.dataset.shopDrag.startsWith('probe:'))return;
     if(e.button!==0||!el||el.disabled||!(this.getSession()?.shop||this.getSession()?.street))return;
     this.drag={kind:el.dataset.shopDrag,id:e.pointerId,x:e.clientX,y:e.clientY,el,moved:false};
     el.setPointerCapture(e.pointerId);
@@ -28,7 +28,7 @@ export class ShopInteractions {
     const d=this.drag;if(!d||d.id!==e.pointerId)return;
     const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-shop-drop]')?.dataset.shopDrop;
     this.cancel();if(!d.moved)return;
-    this.ignoreClick=true;const s=this.getSession();if(!s||s.won)return;
+    this.ignoreClick=true;const s=this.getSession();if(!s||s.won||s.tool==='meter'&&!d.kind.startsWith('probe:'))return;
     if(s.street){if(d.kind.startsWith('street:')&&target?.startsWith('street:')){s.pending=null;s.pin(d.kind.slice(7));s.pin(target.slice(7));s.messageTarget='cabinet';this.onChange();}return;}
     if(!s.shop)return;
     if(d.kind.startsWith('probe:')&&target?.startsWith('point:'))s.shop.placeProbe(d.kind.split(':')[1],target.slice(6));

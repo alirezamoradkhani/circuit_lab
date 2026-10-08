@@ -10,7 +10,7 @@ for(let i=0;i<5;i++){
   assert.match(renderAdventure(s),/data-action="expand-circuit"/);
   s.circuitExpanded=true;
   const modal=renderAdventure(s);
-  assert.equal((modal.match(/class="cabinet-panel"/g)||[]).length,1,'only one editable instance');
+  assert.equal((modal.match(/class="cabinet-panel(?: [^"]*)?"/g)||[]).length,1,'only one editable instance');
   assert.match(modal,/<dialog class="circuit-dialog"/);
   assert.match(modal,/data-action="close-circuit"/);
   assert.ok(!modal.includes('with-cabinet'),'scene is not squeezed behind popup');

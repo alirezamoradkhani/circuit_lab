@@ -5,10 +5,15 @@ const assert=(v,m)=>{if(!v)throw Error(m)};
 try{
  const g=new CityGame(document.querySelector('#root'));g.progress=new CityProgress({getItem:()=>null,setItem:()=>{}},'ui-test');g.setActive(true);g.progress.complete('gate',0);g.progress.complete('shop',0);g.start(2);
  const click=sel=>{const el=g.el(sel);assert(el,'missing '+sel);el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))};
- click('[data-target="cabinet"]');click('[data-action="expand-circuit"]');assert(g.el('dialog')?.open,'modal is open');assert(g.root.querySelectorAll('.cabinet-panel').length===1,'one live board only');
+ click('[data-target="cabinet"]');assert(!g.el('.cabinet-panel [data-tool]'),'no duplicate meter tool in inline panel');click('[data-action="expand-circuit"]');assert(g.el('dialog')?.open,'modal is open');assert(g.root.querySelectorAll('.cabinet-panel').length===1,'one live board only');
  click('dialog [data-tool="meter"]');click('dialog [data-measure-part="p4"]');
  assert(g.el('dialog .component-meter output').textContent==='12.00 V','component voltage');
  assert(g.el('dialog .component-meter').textContent.includes('0.00 A'),'failed lamp current');
+ const meterSession=g.sessions.get(2),meterSnapshot=meterSession.board.snapshot(),meterCredits=meterSession.credits;
+ click('dialog [data-street-replace="p4"]');click('dialog [data-street-isolate="p3"]');click('dialog [data-action="switch"]');click('dialog [data-wire="0"]');
+ assert(meterSession.board.snapshot()===meterSnapshot,'meter clicks never edit circuit');assert(meterSession.credits===meterCredits,'meter never spends credits');
+ assert(g.el('dialog .component-meter output').textContent==='0.00 V','wire measurement');
+ assert(getComputedStyle(g.el('dialog [data-pin]')).cursor.includes('data:image/svg+xml'),'instrument cursor');
  click('dialog [data-tool="inspect"]');
  const s=g.sessions.get(2),count=s.board.wires.length;
  click('dialog [data-wire="0"]');assert(s.board.wires.length===count-1,'edit persists');assert(g.el('dialog')?.open,'modal stays open after edit');

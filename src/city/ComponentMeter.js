@@ -9,7 +9,10 @@ export function measurePart(session,id){
 }
 export function componentMeterView(s){
   if(s.tool!=='meter')return '';
-  const r=measurePart(s,s.meteredPart);
+  let r=measurePart(s,s.meteredPart);
+  if(Number.isInteger(s.meteredWire)&&s.board.wires[s.meteredWire]){
+    const m=measureCircuit(s.board);r={name:'سیم',voltage:m.short?null:0,current:null,error:m.short?'اتصال کوتاه؛ اندازه‌گیری معتبر نیست.':'اختلاف ولتاژ دو سر سیم ایده‌آل صفر است.'};
+  }
   if(!r)return '<div class="component-meter" role="status">⌁ روی بدنهٔ یک قطعه بزن تا ولتاژ دو سر آن را بخوانی.</div>';
   return `<div class="component-meter" role="status" aria-live="polite"><strong>${r.name}</strong><output dir="ltr">${r.voltage===null?'—':r.voltage.toFixed(2)} V</output>${r.current===null?'':`<span dir="ltr">I = ${r.current.toFixed(2)} A</span>`}<small>${r.error||'ولتاژ دو سر قطعه'+(r.current===null?'':' · جریان محاسبه‌شده')}</small></div>`;
 }

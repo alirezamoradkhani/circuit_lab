@@ -1,9 +1,9 @@
 import {renderTown} from './scene.js';
 import {adventures} from './adventureData.js';
-import {AdventureSession} from './AdventureSession.js?v=meter7';
-import {renderAdventure} from './AdventureView.js?v=meter7';
+import {AdventureSession} from './AdventureSession.js?v=meter8';
+import {renderAdventure} from './AdventureView.js?v=meter8';
 import {CityProgress} from './Progress.js';
-import {ShopInteractions} from './ShopInteractions.js?v=meter7';
+import {ShopInteractions} from './ShopInteractions.js?v=meter8';
 
 export class CityGame {
   constructor(root){
@@ -50,6 +50,7 @@ export class CityGame {
     const notesOpen=!!this.el('.field-notes')?.open;
     const panelScroll=this.el('.cabinet-panel')?.scrollTop||0;
     const diagramScroll=this.el('.circuit-diagram-scroll')?.scrollLeft||0;
+    this.el('[data-stage]').classList.toggle('meter-mode',this.sessions.get(this.index).tool==='meter');
     this.el('[data-stage]').innerHTML=renderAdventure(this.sessions.get(this.index));
     this.el('.field-notes').open=notesOpen;
     if(this.el('.cabinet-panel'))this.el('.cabinet-panel').scrollTop=panelScroll;
@@ -70,8 +71,12 @@ export class CityGame {
     const action=button.dataset.action;
     if(action==='map'){this.showMap();return;}
     const s=this.sessions.get(this.index);if(!s)return;
-    if((button.dataset.measurePart||button.dataset.pin)&&s.tool==='meter'){s.meteredPart=button.dataset.measurePart||button.dataset.pin.split(':')[0];s.pending=null;s.messageTarget=null;this.renderGame();this.el(`[data-measure-part="${s.meteredPart}"]`)?.focus({preventScroll:true});return;}
-    if(button.dataset.wire!==undefined&&s.tool==='meter')return;
+    if(s.tool==='meter'){
+      const d=button.dataset;
+      const part=d.measurePart||d.pin?.split(':')[0]||d.streetInspect||d.streetReplace||d.streetIsolate||(d.streetCable?s.street?.cable?.id:null)||((d.resistor||d.shopSpare||d.shopAction)?s.board.parts.find(p=>p.type==='resistor')?.id:null)||(action==='switch'?s.board.parts.find(p=>p.type==='switch')?.id:null);
+      if(part||d.wire!==undefined){s.meteredPart=part||null;s.meteredWire=d.wire===undefined?null:Number(d.wire);s.pending=null;s.messageTarget=null;if(d.streetInspect&&!s.panel){s.street.inspect(part);s.messageTarget="load";}this.renderGame();return;}
+      if(d.load!==undefined){s.note(s.reading('load'));s.messageTarget='load';this.renderGame();return;}
+    }
     if(action==='expand-circuit'){s.circuitExpanded=true;s.messageTarget=null;this.renderGame();return;}
     if(action==='close-circuit'){this.closeCircuit();return;}
     if(action==='dismiss-message'){s.messageTarget=null;this.renderGame();this.el(`[data-target="${s.focus}"]`)?.focus({preventScroll:true});return;}
@@ -93,7 +98,7 @@ export class CityGame {
       if(button.dataset.streetIsolate)s.street.isolate(button.dataset.streetIsolate);
       if(button.dataset.streetCable)s.street.removeCable();
     }
-    if(button.dataset.tool){s.tool=button.dataset.tool;s.pending=null;s.message=s.tool==='meter'?'برای اندازه‌گیری، منبع یا مصرف‌کننده را در صحنه انتخاب کن.':'با انتخاب آدم‌ها و وسایل، سرنخ‌های خرابی را پیدا کن.';}
+    if(button.dataset.tool){this.shopInteractions.cancel();s.tool=button.dataset.tool;s.pending=null;s.meteredWire=null;s.message=s.tool==='meter'?'برای اندازه‌گیری، منبع یا مصرف‌کننده را در صحنه انتخاب کن.':'با انتخاب آدم‌ها و وسایل، سرنخ‌های خرابی را پیدا کن.';}
     if(button.dataset.target)s.inspect(button.dataset.target);
     if(button.dataset.pin)s.pin(button.dataset.pin);
     if(button.dataset.wire!==undefined)s.removeWire(Number(button.dataset.wire));

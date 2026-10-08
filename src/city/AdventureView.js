@@ -1,4 +1,4 @@
-import {componentMeterView} from './ComponentMeter.js';
+import {componentMeterView} from './ComponentMeter.js?v=meter8';
 import {buildingArt} from './scene.js';
 import {appliances,replacements} from './adventureData.js';
 import {character} from './characters.js';
@@ -49,7 +49,7 @@ export function renderCabinet(s,expanded=false){
     if(['shop','station'].includes(s.mission.id))content+=`<div class="resistor-slot"><span>مقاومت نصب‌شده</span><b dir="ltr">${s.board.parts.find(p=>p.type==='resistor').value} Ω</b></div><p class="cabinet-help">جایگزینی مقاومت:</p><div class="spare-parts">${replacements.map(p=>`<button data-resistor="${p.value}" aria-pressed="${s.board.parts.find(part=>part.type==='resistor').value===p.value}" ${s.credits<p.cost?'disabled':''}><b dir="ltr">${p.value} Ω</b><small>${fa(p.cost)} اعتبار</small></button>`).join('')}</div>`;
     const sw=s.board.parts.find(p=>p.type==='switch');content+=`<button class="cabinet-switch" data-action="switch" aria-pressed="${sw.closed}">کلید اصلی: ${sw.closed?'بسته ●':'باز ○'}</button>`;
   }
-  return `<section class="cabinet-panel" aria-label="داخل جعبه‌برق"><header><strong>${expanded?'نمای بزرگ مدار':'جعبه‌برق'}</strong><div class="cabinet-header-actions"><button data-tool="${s.tool==='meter'?'inspect':'meter'}" aria-pressed="${s.tool==='meter'}" title="مولتی‌متر" aria-label="مولتی‌متر">V</button>${expanded?'':'<button class="expand-circuit" data-action="expand-circuit" title="بزرگ‌نمایی مدار" aria-label="باز کردن مدار در پنجرهٔ بزرگ">⛶</button>'}<button data-action="${expanded?'close-circuit':'close-panel'}" aria-label="${expanded?'بستن نمای بزرگ':'بستن جعبه‌برق'}">×</button></div></header>${componentMeterView(s)}${sceneMessage(s,true)}${content}</section>`;
+  return `<section class="cabinet-panel ${s.tool==='meter'?'meter-mode':''}" aria-label="داخل جعبه‌برق"><header><strong>${expanded?'نمای بزرگ مدار':'جعبه‌برق'}</strong><div class="cabinet-header-actions">${expanded?`<button data-tool="${s.tool==='meter'?'inspect':'meter'}" aria-pressed="${s.tool==='meter'}" title="مولتی‌متر" aria-label="مولتی‌متر">V</button>`:''}${expanded?'':'<button class="expand-circuit" data-action="expand-circuit" title="بزرگ‌نمایی مدار" aria-label="باز کردن مدار در پنجرهٔ بزرگ">⛶</button>'}<button data-action="${expanded?'close-circuit':'close-panel'}" aria-label="${expanded?'بستن نمای بزرگ':'بستن جعبه‌برق'}">×</button></div></header>${componentMeterView(s)}${sceneMessage(s,true)}${content}</section>`;
 }
 
 export function renderAdventure(s){
