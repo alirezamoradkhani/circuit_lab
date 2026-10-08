@@ -16,6 +16,15 @@ export class StreetRepair {
   get lamps(){return this.session.board.parts.filter(p=>p.type==='lamp');}
   sync(){for(const p of this.lamps)p.disconnected=this.failed.has(p.id)||this.isolated.has(p.id);}
   invalidate(){this.ready=false;this.verified=false;}
+  topology(){
+    const s=this.session,b=s.board;
+    if(!this.cable)return evaluate(b,cityMissions[s.index]);
+    // An unused old connection must not force a particular repair sequence.
+    const terminals=[this.cable.id+':0',this.cable.id+':1'];
+    const aliases=new Map(terminals.map(t=>[t,b.wires.flatMap(w=>w.includes(t)?w.filter(x=>!terminals.includes(x)):[])[0]]));
+    const wires=b.wires.map(w=>w.map(t=>aliases.has(t)?aliases.get(t):t)).filter(w=>w.every(Boolean)&&w[0]!==w[1]);
+    return evaluate({parts:b.parts.filter(p=>p!==this.cable),wires},cityMissions[s.index]);
+  }
   readings(){
     const s=this.session,m=measureCircuit(s.board);
     return this.lamps.map(p=>{
@@ -49,11 +58,8 @@ export class StreetRepair {
     const fail=text=>{s.mistakes++;s.message=text;return false;};
     if(m.short){s.tripped=true;this.invalidate();return fail('اتصال کوتاه! محافظ قطع شد؛ اتصال مستقیم دو ریل را بردار.');}
     if(this.failed.size)return fail('لامپ چراغ ۲ هنوز خراب است؛ ولتاژ سوکت و جریان آن را بررسی کن و لامپ را تعویض کن.');
-    if(this.cable){
-      const lit=this.readings().every(r=>Math.abs(r.current-1)<.01);
-      return fail(lit?'هر سه چراغ نور کامل دارند، اما اتصال فرسوده هنوز در جعبه‌برق باقی مانده است. سیم جدید آن را دور زده؛ روی «برداشتن اتصال فرسوده» بزن. سیم جدیدت حفظ می‌شود.':'اتصال فرسودهٔ مسیر چراغ ۳ هنوز باقی است. آن را بردار و مسیر جدیدی از خروجی کلید به چراغ ۳ سیم‌کشی کن.');
-    }
-    const topology=evaluate(s.board,cityMissions[s.index]);
+    if(this.cable&&Math.abs(m.volts[this.cable.id]??0)>.01)return fail('اتصال قدیمی هنوز جریان می‌کشد. مسیر چراغ ۳ را اصلاح کن؛ می‌توانی اتصال قدیمی را برداری یا یک مسیر مستقیم جایگزین بسازی.');
+    const topology=this.topology();
     if(!topology.ok){this.invalidate();return fail(topology.message);}
     const readings=this.readings(),full=r=>Math.abs((r.voltage??0)-12)<.01&&Math.abs(r.current-1)<.01;
     if(this.isolated.size){
@@ -63,7 +69,7 @@ export class StreetRepair {
     }
     if(!readings.every(full))return fail('هر سه چراغ باید ۱۲ ولت و جریان ۱ آمپر داشته باشند.');
     this.ready=true;
-    if(!this.verified){s.message='نور هر سه چراغ کامل است. حالا یک شاخه را قطع کن و دوباره آزمایش بزن تا استقلال مسیرها ثابت شود.';return false;}
+    if(!this.verified){s.message='✓ تعمیر انجام شد؛ هر سه چراغ درست روشن‌اند. فقط آزمایش پایانی مانده: «قطع شاخه» یکی از چراغ‌ها را بزن، سپس «آزمایش استقلال شاخه‌ها» را بزن. دو چراغ دیگر باید روشن بمانند.';return false;}
     s.won=true;s.message=s.mission.success;return true;
   }
 }

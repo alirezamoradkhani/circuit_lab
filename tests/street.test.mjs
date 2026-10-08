@@ -6,11 +6,17 @@ const repair=s=>{s.street.replace('p4');s.street.removeCable();s.pin('p2:1');s.p
 // A bypass restores brightness but leaves the damaged connection installed.
 const bypass=fresh();bypass.street.replace('p4');bypass.pin('p2:1');bypass.pin('p5:0');
 assert.deepEqual(bypass.street.readings().map(r=>r.current),[1,1,1]);
-assert.equal(bypass.test(),false);assert.match(bypass.message,/هر سه چراغ نور کامل دارند/);
-bypass.street.removeCable();assert.match(bypass.message,/مسیر جدید هر سه چراغ برقرار/);
-assert.ok(bypass.board.wires.some(w=>w.includes('p2:1')&&w.includes('p5:0')));
-bypass.test();assert.equal(bypass.street.ready,true);
+assert.equal(bypass.test(),false);assert.match(bypass.message,/تعمیر انجام شد/);
+assert.equal(bypass.street.ready,true);assert.equal(bypass.mistakes,0);
+assert.ok(bypass.street.cable,'accept working alternative without removing unused part');
 bypass.street.isolate('p3');bypass.test();bypass.street.isolate('p3');assert.equal(bypass.test(),true);
+const extraLoad=fresh();extraLoad.street.replace('p4');extraLoad.pin('p2:1');extraLoad.pin('p5:0');
+const cableId=extraLoad.street.cable.id;
+extraLoad.removeWire(extraLoad.board.wires.findIndex(w=>w.includes(cableId+':1')));
+extraLoad.pin(cableId+':1');extraLoad.pin('p1:1');
+assert.deepEqual(extraLoad.street.readings().map(r=>r.current),[1,1,1]);
+assert.equal(extraLoad.test(),false,'an active unintended load is not an unused connection');
+assert.equal(extraLoad.street.ready,false);
 const s=fresh();
 assert.deepEqual(s.street.readings().map(r=>r.brightness),[1,0,.25]);
 assert.equal(s.test(),false);
