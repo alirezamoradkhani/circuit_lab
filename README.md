@@ -125,3 +125,12 @@ A direct replacement wire is also accepted when the old connection carries no cu
 Mission UI: the expand control opens a native modal with the same editable circuit. Escape or Close restores focus to its opener. Running a test closes the popup and displays a color-coded result on the mission scene. `tests/city-ui.browser.html` exercises modal editing, cancel/focus restoration, shop probes and scene feedback in a browser using disposable progress storage; `?popup=1` previews the expanded view.
 
 Direct component measurements: select the V tool in the mission toolbar or cabinet header, then select a component body. The compact readout shows terminal voltage and calculated load current. Wiring edits are suppressed in meter mode. Measurements remain live after repairs, and open/floating terminals or shorts are reported explicitly.
+
+
+### Additional city challenges (missions 6–8)
+
+- **Backup clinic**: restore essential services on a 24 W generator, then adapt to a 12 W backup source. Low-speed ventilation preserves all three essential loads. Excess power trips the protector.
+- **Pump station**: each motor needs 18 W to start but only 6 W to run. A 24 W supply forces temporary load shedding before starting the second motor. Each explicit test advances one pumping cycle; there is no wall-clock deadline. Completion needs a full tank, two running pumps, and restored lighting.
+- **Radio tower**: tune a 12 V divider to 4 V without a load, then retune after a 12-ohm receiver is connected in parallel with its lower leg. Voltages come from the existing DC solver. Multiple valid tuning paths are accepted.
+
+These challenges use separate model classes in `src/city/challenges/`, keep the existing compact panel and editable popup, and preserve previous adventure stars. The old five editor missions remain unchanged. Motor startup is an explicit educational power-demand model; running loads are resistive DC equivalents. Run `npm test` for model regressions. Open `tests/challenges.browser.html` through the project server for a complete UI walkthrough with isolated in-memory progress; query `?mission=6` previews the pump mission and `?mobile=1&mission=7` constrains the radio preview to 390 px.

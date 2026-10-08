@@ -1,0 +1,20 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="src/city/city.css"><link rel="stylesheet" href="src/city/town.css"><link rel="stylesheet" href="src/city/adventure.css"><link rel="stylesheet" href="src/city/scene-messages.css"><link rel="stylesheet" href="src/city/shop.css"><link rel="stylesheet" href="src/city/street.css"><link rel="stylesheet" href="src/city/circuit-popup.css"><link rel="stylesheet" href="src/city/challenges/challenges.css"></head><body class="city-theme" style="padding:14px"><div id="cityMode"></div><pre id="qa" style="direction:ltr;color:#345"></pre><script type="module">
+import {CityGame} from './src/city/CityGame.js';
+import {CityProgress} from './src/city/Progress.js';
+import {adventures} from './src/city/adventureData.js';
+const assert=(v,m)=>{if(!v)throw Error(m)};
+try{
+ const g=new CityGame(document.querySelector('#cityMode'));g.setActive(true);g.progress=new CityProgress({getItem:()=>null,setItem:()=>{}},'test',adventures);
+ adventures.slice(0,5).forEach(m=>g.progress.complete(m.id,0));g.start(5);
+ const click=q=>{const el=g.el(q);assert(el,'missing '+q);el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))};
+ const set=(key,value)=>click(`[data-challenge="${key}"][data-value="${value}"]`);
+ click('[data-target="cabinet"]');click('.adventure-toolbar [data-tool="meter"]');set('1',2);assert(g.sessions.get(5).challenge.states[1]===0,'meter must not change loads');assert(g.el('.component-meter'),'meter output visible');click('.adventure-toolbar [data-tool="inspect"]');
+ set('3',0);set('1',2);set('2',1);click('[data-action="test"]');assert(g.sessions.get(5).challenge.phase===1,'backup event');assert(!g.sessions.get(5).won,'first phase is not victory');set('1',1);click('[data-action="test"]');assert(g.sessions.get(5).won,'backup solved');click('[data-action="next"]');assert(g.index===6,'next mission routing');
+ click('[data-target="cabinet"]');set('0',1);set('1',1);assert(g.sessions.get(6).tripped,'startup overload');set('2',0);click('[data-action="reset-fuse"]');set('0',1);set('1',1);set('2',1);click('[data-action="test"]');click('[data-action="test"]');assert(g.sessions.get(6).won,'pumps solved');click('[data-action="next"]');
+ click('[data-target="cabinet"]');set('top',24);click('[data-action="test"]');assert(g.sessions.get(7).challenge.phase===1,'load connected');click('[data-action="expand-circuit"]');click('dialog [data-tool="meter"]');click('dialog [data-measure-part="p4"]');assert(g.el('.component-meter output').textContent==='2.40 V','loaded measurement');set('top',12);assert(g.sessions.get(7).challenge.top.value===24,'meter cannot replace resistor');click('dialog [data-tool="inspect"]');set('top',12);click('dialog [data-action="test"]');assert(g.sessions.get(7).won,'radio solved');click('[data-action="next"]');assert(!g.el('.campaign-ending').hidden,'eight-mission ending');assert(g.el('progress').max===8,'progress max');
+ const q=new URLSearchParams(location.search);
+ if(q.has('mobile'))document.body.style.width='390px';
+ if(q.has('mission')){g.start(Number(q.get('mission')));click('[data-action="restart"]');click('[data-target="cabinet"]');if(q.has('popup'))click('[data-action="expand-circuit"]');}
+ document.querySelector('#qa').textContent='PASS: three browser walkthroughs, 8-mission progression, phase events, meter read-only and popup measurements';window.scrollTo(0,0);
+}catch(e){document.querySelector('#qa').textContent='FAIL: '+e.stack}
+</script></body></html>

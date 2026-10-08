@@ -1,6 +1,7 @@
+import {createChallenge,extraSpecs} from './challenges/index.js';
 import {Board,evaluate} from '../builder/Board.js';
 import {cityMissions,seedMission} from './missions.js';
-import {adventures,appliances,replacements} from './adventureData.js';
+import {adventures,appliances,replacements} from './adventureData.js?v=missions9';
 import {measureCircuit} from './CircuitMeter.js?v=shop1';
 import {StreetRepair} from './StreetRepair.js?v=street3';
 import {ShopRepair} from './ShopRepair.js';
@@ -9,13 +10,14 @@ import {ShopRepair} from './ShopRepair.js';
 export class AdventureSession {
   constructor(index){
     this.index=index;this.mission=adventures[index];this.board=new Board();
-    seedMission(this.board,cityMissions[index]);
+    seedMission(this.board,cityMissions[index]||extraSpecs[this.mission.id]);
     this.tool='inspect';this.focus='person';this.panel=false;this.pending=null;
     this.credits=this.mission.budget;this.spent=0;this.mistakes=0;this.hints=0;
     this.tripped=false;this.won=false;this.notes=[];this.loads=[true,false,false,true];
     this.message=this.mission.request;
     if(this.mission.id==='shop')this.shop=new ShopRepair(this);
     if(this.mission.id==='street')this.street=new StreetRepair(this);
+    this.challenge=createChallenge(this);
   }
   get power(){return appliances.reduce((sum,p,i)=>sum+(this.loads[i]?p.power:0),0);}
   get current(){
@@ -35,6 +37,7 @@ export class AdventureSession {
     this.note(target==='source'?this.mission.source:this.mission.plate);
   }
   reading(target){
+    if(this.challenge)return target==='source'?this.mission.source:`${this.challenge.status}؛ جریان منبع: ${this.current.toFixed(2)} A.`;
     if(target==='source')return 'اندازه‌گیری منبع: ۱۲٫۰۰ V؛ منبع سالم است.';
     if(this.mission.id==='clinic')return `بارهای انتخاب‌شده: ${this.power} W؛ جریان ${this.tripped?'۰ (محافظ قطع است)':(this.power/12).toFixed(2)} A؛ ظرفیت ۱۸ W.`;
     if(this.tripped)return 'محافظ قطع است؛ ابتدا آن را بازنشانی کن.';
@@ -73,6 +76,7 @@ export class AdventureSession {
   test(){
     if(this.won)return true;
     if(this.tripped){this.message='محافظ قطع است؛ ابتدا بازنشانی کن.';return false;}
+    if(this.challenge)return this.challenge.test();
     if(this.street)return this.street.test();
     let ok=false,reason='';
     if(this.mission.id==='clinic'){

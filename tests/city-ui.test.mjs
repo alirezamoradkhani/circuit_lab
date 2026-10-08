@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
+import {adventures} from '../src/city/adventureData.js';
 import {AdventureSession} from '../src/city/AdventureSession.js';
 import {renderAdventure} from '../src/city/AdventureView.js';
 import {sceneMessage} from '../src/city/SceneMessage.js';
 
-for(let i=0;i<5;i++){
+for(let i=0;i<adventures.length;i++){
   const s=new AdventureSession(i);s.panel=true;s.messageTarget='result';s.resultTone='error';s.message='نتیجهٔ آزمایش';
   assert.equal(sceneMessage(s,true),'','test feedback must never be hidden in cabinet');
   assert.match(sceneMessage(s),/result-error/);
@@ -17,4 +18,4 @@ for(let i=0;i<5;i++){
   s.circuitExpanded=false;s.resultTone='success';assert.match(sceneMessage(s),/result-success/);
   s.resultTone='info';assert.match(sceneMessage(s),/result-info/);
 }
-console.log('PASS: scene result placement, semantic result colors and one editable modal across all five missions.');
+console.log('PASS: scene result placement, semantic result colors and one editable modal across all missions.');
