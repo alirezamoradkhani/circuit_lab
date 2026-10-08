@@ -1,9 +1,9 @@
 import {renderTown} from './scene.js';
 import {adventures} from './adventureData.js';
-import {AdventureSession} from './AdventureSession.js?v=street1';
-import {renderAdventure} from './AdventureView.js?v=street1';
+import {AdventureSession} from './AdventureSession.js?v=street2';
+import {renderAdventure} from './AdventureView.js?v=street2';
 import {CityProgress} from './Progress.js';
-import {ShopInteractions} from './ShopInteractions.js?v=street1';
+import {ShopInteractions} from './ShopInteractions.js?v=street2';
 
 export class CityGame {
   constructor(root){

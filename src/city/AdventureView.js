@@ -3,7 +3,7 @@ import {appliances,replacements} from './adventureData.js';
 import {character} from './characters.js';
 import {sceneMessage} from './SceneMessage.js';
 import {shopWorkbench} from './ShopWorkbench.js?v=shop3';
-import {streetWorkbench} from './StreetWorkbench.js';
+import {streetWorkbench} from './StreetWorkbench.js?v=street2';
 const fa=n=>n.toLocaleString('fa-IR');
 export function renderSite(s){
   const street=s.mission.id==='street';

@@ -37,7 +37,7 @@ export class StreetRepair {
   removeCable(){
     const s=this.session;if(s.won||!this.cable||!s.spend(3))return;
     s.board.remove(this.cable.id);this.cable=null;s.pending=null;this.invalidate();
-    s.message='اتصال فرسوده برداشته شد. مسیر رفت چراغ ۳ باز است؛ از خروجی مثبت کلید به پایانهٔ + چراغ سیم بکش.';
+    s.message=this.readings().every(r=>Math.abs(r.current-1)<.01)?'اتصال فرسوده برداشته شد؛ مسیر جدید هر سه چراغ برقرار است. حالا آزمایش روشنایی را بزن.':'اتصال فرسوده برداشته شد. اگر چراغ ۳ خاموش است، از خروجی مثبت کلید به پایانهٔ + چراغ سیم بکش.';
   }
   isolate(id){
     const s=this.session;if(s.won||!this.lamps.some(p=>p.id===id))return;
@@ -48,7 +48,11 @@ export class StreetRepair {
     const s=this.session,m=measureCircuit(s.board);
     const fail=text=>{s.mistakes++;s.message=text;return false;};
     if(m.short){s.tripped=true;this.invalidate();return fail('اتصال کوتاه! محافظ قطع شد؛ اتصال مستقیم دو ریل را بردار.');}
-    if(this.failed.size||this.cable)return fail('هنوز خرابی رفع نشده است. جریان و ولتاژ هر چراغ را جداگانه اندازه بگیر.');
+    if(this.failed.size)return fail('لامپ چراغ ۲ هنوز خراب است؛ ولتاژ سوکت و جریان آن را بررسی کن و لامپ را تعویض کن.');
+    if(this.cable){
+      const lit=this.readings().every(r=>Math.abs(r.current-1)<.01);
+      return fail(lit?'هر سه چراغ نور کامل دارند، اما اتصال فرسوده هنوز در جعبه‌برق باقی مانده است. سیم جدید آن را دور زده؛ روی «برداشتن اتصال فرسوده» بزن. سیم جدیدت حفظ می‌شود.':'اتصال فرسودهٔ مسیر چراغ ۳ هنوز باقی است. آن را بردار و مسیر جدیدی از خروجی کلید به چراغ ۳ سیم‌کشی کن.');
+    }
     const topology=evaluate(s.board,cityMissions[s.index]);
     if(!topology.ok){this.invalidate();return fail(topology.message);}
     const readings=this.readings(),full=r=>Math.abs((r.voltage??0)-12)<.01&&Math.abs(r.current-1)<.01;
