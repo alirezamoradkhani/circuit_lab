@@ -41,3 +41,20 @@ body.city-theme{--text:#233744;--muted:#5b6d75;--line:#cbd2d2;background:#edf0ee
 .city-theme .circuit-dialog .cabinet-panel [data-measure-part]{scroll-margin-block:75px}
 
 #cityMode .infrastructure-panel .repair-wiring text{font-size:18px}
+
+/* Mission schematics: shared rails, explicit junctions and legible component cards. */
+#cityMode .schematic-scroll{direction:ltr;scrollbar-width:thin}
+#cityMode .repair-wiring.city-schematic{display:block;width:100%;min-width:0;max-width:var(--schematic-width);height:auto;max-height:none;margin:8px auto;background:#e6eee7}
+#cityMode .city-schematic .schematic-wires{fill:none;stroke:#537970;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+#cityMode .city-schematic .schematic-junctions{fill:#365e56}
+#cityMode .city-schematic .schematic-body{fill:#f7faf6;stroke:#8ca69a;stroke-width:1.5}
+#cityMode .city-schematic .schematic-source{fill:#f4e7bc;stroke:#ae975c}
+#cityMode .city-schematic .is-open .schematic-body{fill:#e0e5e1;stroke:#92a09a;stroke-dasharray:5 3}
+#cityMode .city-schematic text.schematic-name{font:16px Tahoma,sans-serif;fill:#243e3a;direction:rtl}
+#cityMode .city-schematic text.schematic-value{font:600 16px Tahoma,sans-serif;fill:#3d625a}
+#cityMode .city-schematic .is-open text.schematic-value{fill:#626f69}
+#cityMode .city-schematic .schematic-terminal{fill:#e6eee7;stroke:#537970;stroke-width:1.5}
+#cityMode .city-schematic .meter-component:hover .schematic-body,#cityMode .city-schematic .meter-component:focus .schematic-body,#cityMode .city-schematic .meter-selected .schematic-body{stroke:#aa792b;stroke-width:3}
+#cityMode .city-schematic .meter-component:focus{outline:none}
+#cityMode .circuit-dialog .schematic-scroll{width:100%;margin:10px auto}
+#cityMode .circuit-dialog .schematic-scroll:before{display:none}
