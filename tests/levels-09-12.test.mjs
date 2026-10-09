@@ -78,4 +78,3 @@ for(const [factory,ids] of [[passage,['cart','capacitor','capCharger','charger']
  for(const id of ids){const p=st(s,id).position,candidates=Array.from({length:16},(_,i)=>({x:p.x+Math.cos(i*Math.PI/8)*.95,z:p.z+Math.sin(i*Math.PI/8)*.95}));assert.ok(candidates.some(q=>s.navigation.walkable(q,{})&&s.navigation.findPath(from,q,{}).length),`${s.id}/${id} must be reachable through real navigation`);}
 }
 console.log('Chapter three: physical capacitor/battery, ray-traced garden, both rescues, three finale source routes and recovery passed.');
-

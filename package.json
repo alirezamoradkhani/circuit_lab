@@ -5,11 +5,13 @@
   "description": "Electric circuit lessons and a story-driven 3D puzzle adventure",
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/workshop.test.mjs && node tests/workshop-hints.test.mjs && node tests/components.test.mjs && node tests/component-engine.test.mjs",
+    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/workshop.test.mjs && node tests/workshop-hints.test.mjs && node tests/components.test.mjs && node tests/component-engine.test.mjs && npm run test:campaign",
     "vendor": "node scripts/vendor-three.mjs",
     "test:browser": "node tests/workshop.browser.mjs",
     "test:components": "node tests/components.test.mjs && node tests/component-engine.test.mjs",
-    "test:components:browser": "node tests/components.browser.mjs"
+    "test:components:browser": "node tests/components.browser.mjs",
+    "test:campaign": "node --test tests/levels-02-04.test.mjs tests/levels-05-08.test.mjs tests/levels-09-12.test.mjs tests/campaign-runtime.test.mjs",
+    "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs"
   },
   "type": "module",
   "dependencies": {

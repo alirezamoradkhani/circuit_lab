@@ -19,5 +19,3 @@ export default function createDefinition(){const start=pos(-5,2.9),exit=pos(5,2.
  obstacles(w,ctx){return !state(w,'sensor3').lit&&!ctx.flags.repaired?[{x:2.6,z:0,w:.35,d:8}]:[];}
  };
 }
-
-
