@@ -1,25 +1,14 @@
+import {ObjectInspector} from './ObjectInspector.js';
 import {CampaignLayout} from './CampaignLayout.js';
 import {icon} from './icons.js';
 import {SceneHUD} from './SceneHUD.js';
 import {Device,Source,SourceSelector} from '../components/index.js';
 import {campaignCatalog} from '../levels/catalog.js';
-export const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export {equipmentStatus} from './EquipmentStatus.js';
+import {escapeHTML,equipmentStatus} from './EquipmentStatus.js';
 const fa=n=>Number(n).toLocaleString('fa-IR',{maximumFractionDigits:2});
 export function stageMenu(active,completed=[]){
  return '<span class="story-kicker">مدار گمشده · دوازده ایستگاه</span><h2>مسیر داستان</h2><p>هر مرحله معمای خودش را دارد. بازپخش، ذخیرهٔ مسیر اصلی را جایگزین نمی‌کند.</p><div class="campaign-stage-list">'+campaignCatalog.map(e=>'<button data-story-action="stage:'+e.number+'" '+(e.number===active?'aria-current="step"':'')+'><span>'+fa(e.number)+'</span><b>'+e.title+'</b><small>'+(completed.includes(e.number)?'✓ تمام شده':e.number===active?'اینجا هستی':'ورود به مرحله')+'</small></button>').join('')+'</div>';
-}
-export function equipmentStatus(e,world){
- if(e instanceof Source)return (e.state.tripped?'محافظ قطع است':e.available()?'منبع آماده':'منبع خاموش')+' · '+fa(e.voltage)+' ولت · سقف '+fa(e.maxWatts)+' وات'+(Number.isFinite(e.state.energy)?' · '+fa(e.state.energy)+' ژول':'');
- if(e.kind==='Divider')return 'خروجی تقسیم‌کننده: '+fa(e.state.output)+' ولت'+(e.state.safe?'':' · توان نامی قطعه کافی نیست');
- if(e.kind==='Receiver')return ({off:'خاموش',noise:'پیام بریده؛ ولتاژ یا آنتن را بررسی کن',clear:'پیام واضح',alternate:'برنامهٔ دیگری دریافت می‌شود'})[e.state.quality];
- if(e instanceof Device){const d=e.measure(world);return (e.state.complete?'کار کامل شده':e.state.powered?'برق برقرار':'برق قطع')+' · '+fa(d.voltage)+' ولت · '+fa(d.watts)+' وات';}
- if(e.kind==='Resistor')return fa(e.state.ohms)+' اهم';
- if(e.kind==='WaterBasin')return 'سطح آب: '+fa(e.state.level*100)+'٪';
- if(e.kind==='PressurePlate')return e.state.pressed?'صفحه پایین است':'صفحه آزاد است';
- if(e.state.collected)return 'در کیف نگه داشته شده';
- if(e.state.locked||e.state.latched)return 'در جای خود قفل شده';
- if(e.state.holder==='ray')return 'همراه رِی';
- return e.config.description??'';
 }
 function content(kind,session,saved,completed){
  const d=session.definition,w=session.world;
@@ -28,14 +17,14 @@ function content(kind,session,saved,completed){
  if(kind==='reset')return '<h2>دوباره امتحان کنیم؟</h2><p>بازگشت به ورودی فقط رِی و کابل همراه را آزاد می‌کند. شروع تازه، وضعیت همین مرحله را از نو می‌سازد.</p><div class="story-dialog-actions"><button data-story-action="recover">برگشت به ورودی</button><button data-story-action="restart">شروع تازه</button></div>';
  if(kind==='bag')return '<h2>کیف رِی</h2><div class="story-items">'+w.all().filter(e=>e.state.collected||e.state.holder==='ray').map(e=>'<article><div><b>'+escapeHTML(e.config.label??e.id)+'</b><p>'+escapeHTML(equipmentStatus(e,w))+'</p></div></article>').join('')+'</div>';
  if(kind==='circuit')return '<span class="story-kicker">زمان متوقف است</span><h2>اتصال‌های فعلی</h2><div class="campaign-circuit-list">'+[...w.connections].map(([target,c])=>'<p><b>'+escapeHTML(w.get(c.source)?.config.label??c.source)+' ← '+escapeHTML(w.get(target)?.config.label??target)+'</b><br>'+escapeHTML(equipmentStatus(w.get(target),w))+'</p>').join('')+'</div><p>برای تغییر اتصال، به صحنه برگرد و ابزار کابل را انتخاب کن.</p>';
- const h=session.hint();return '<span class="story-kicker">دفتر نورا · '+escapeHTML(d.title)+'</span><h2>'+escapeHTML(h.title)+'</h2><p>'+escapeHTML(h.reason)+'</p><div class="story-hint-note"><b>سرنخ همین حالا</b><p>'+escapeHTML(h.clue)+'</p></div><details class="story-help-details"><summary>راهنمای دقیق‌تر</summary><ol>'+h.steps.map(s=>'<li>'+escapeHTML(s)+'</li>').join('')+'</ol></details><details class="story-help-details"><summary>کنترل‌ها</summary><p>روی زمین بزن تا رِی راه برود. با ابزار دست، وسیله را انتخاب کن و از ابزارهای کنارش استفاده کن. کابل: منبع و مصرف‌کننده را بزن؛ تکرار اتصال آن را جدا می‌کند. ولت‌متر فقط می‌خواند.</p><p>WASD حرکت · E تعامل · C کابل · M ولت‌متر · H سرنخ</p></details><p class="story-subtle">'+(saved?'پیشرفت ذخیره می‌شود.':'ذخیرهٔ دائمی در دسترس نیست؛ بازی در این نشست ادامه دارد.')+' زمان در دفتر متوقف است.</p><div class="story-dialog-actions"><button data-story-action="hint">سرنخ روی صحنه</button></div>';
+ const h=session.hint();return '<span class="story-kicker">دفتر نورا · '+escapeHTML(d.title)+'</span><h2>'+escapeHTML(h.title)+'</h2><p>'+escapeHTML(h.reason)+'</p><div class="story-hint-note"><b>سرنخ همین حالا</b><p>'+escapeHTML(h.clue)+'</p></div><details class="story-help-details"><summary>راهنمای دقیق‌تر</summary><ol>'+h.steps.map(s=>'<li>'+escapeHTML(s)+'</li>').join('')+'</ol></details><details class="story-help-details"><summary>کنترل‌ها</summary><p>روی زمین بزن تا رِی راه برود. با ابزار دست، وسیله را انتخاب کن و از فهرست کنار صحنه کاری را انتخاب کن؛ رِی نزدیک می‌شود و انجام می‌دهد. کابل: بین منبع و مصرف‌کننده بکش یا دو سر را کلیک کن. برای جداکردن از فهرست اتصال‌ها استفاده کن. Esc کابل ناتمام را لغو می‌کند. ولت‌متر فقط می‌خواند.</p><p>WASD حرکت · E تعامل · C کابل · M ولت‌متر · H سرنخ</p></details><p class="story-subtle">'+(saved?'پیشرفت ذخیره می‌شود.':'ذخیرهٔ دائمی در دسترس نیست؛ بازی در این نشست ادامه دارد.')+' زمان در دفتر متوقف است.</p><div class="story-dialog-actions"><button data-story-action="hint">سرنخ روی صحنه</button></div>';
 }
 export class CampaignHUD extends SceneHUD {
  constructor(root,onAction,session,completed){
   const names=Object.fromEntries(session.world.all().filter(e=>e.config.interactive!==false&&!e.config.hidden&&!['Sequence','PathRide','Fog'].includes(e.kind)&&e.id!=='ray').map(e=>[e.id,e.config.label??e.id]));
   super(root,onAction,{
    safeInsets:{top:26,bottom:26},messagesOutsideScene:true,
-   names,pins:session.world.all().filter(e=>e instanceof Device||e instanceof Source||e instanceof SourceSelector||e.kind==='Resistor').map(e=>e.id),
+   names,pins:session.world.all().filter(e=>e instanceof Device||e instanceof Source||e instanceof SourceSelector).map(e=>e.id),
    labels:{chapter:'مدار گمشده / مرحلهٔ '+fa(session.definition.number),title:session.definition.title,introChapter:'ایستگاه '+fa(session.definition.number),introTitle:session.definition.title,introText:session.definition.intro},
    available:(id)=>{const e=session.world.get(id);return e.state.visible&&!e.state.collected;},goal:()=>session.definition.ready(session.world,session.ctx)?'exit':session.definition.focus?.(session.world,session.ctx)??null,objective:()=>session.objective(),
    canUnplug:(s,id)=>session.world.connections.has(id)||[...session.world.connections.values()].some(c=>c.source===id),
@@ -48,19 +37,12 @@ export class CampaignHUD extends SceneHUD {
   const nav=document.createElement('button');nav.dataset.storyAction='levels';nav.title='انتخاب مرحله';nav.setAttribute('aria-label','انتخاب مرحله');nav.textContent='☷';root.querySelector('.story-small-tools').prepend(nav);
   this.panel=document.createElement('section');this.panel.className='campaign-object-tools';this.panel.hidden=true;this.panel.setAttribute('aria-label','ابزارهای وسیلهٔ انتخاب‌شده');this.panel.innerHTML='<header><b></b><p></p></header><div></div>';this.stage.append(this.panel);
   for(const [id,node]of Object.entries(this.nodes)){const e=session.world.get(id),kind=e.kind;const role=kind==='Source'?'source':kind==='Battery'?'battery':kind==='Charger'||e.config.visual==='charger'?'charger':kind==='Guard'?'guard':null;if(role){node.dataset.role=role;node.querySelector('svg').outerHTML=icon(role); }node.title=e.config.label??id;}
-  this.layout=new CampaignLayout(this);
+  this.layout=new CampaignLayout(this);this.inspector=new ObjectInspector(this);
  }
- update(s,scene,tool,selected,nearest,intro,dt){
+ update(s,scene,tool,selected,nearest,intro,dt,interactions){
   super.update(s,scene,tool,selected,nearest,intro,dt);
-  this.root.querySelector('.story-context').hidden=true;
-  const e=this.session.world.get(selected),near=e&&Math.hypot(e.state.position.x-s.player.x,e.state.position.z-s.player.z)<1.7;
-  this.panel.hidden=tool!=='hand'||!e||e.state.collected||!s.started||s.completed;
-  if(!this.panel.hidden){
-   const commands=near?this.session.commands(selected):[],status=near?[equipmentStatus(e,this.session.world),this.session.definition.status?.(this.session.world,selected,this.session.ctx)].filter(Boolean).join(' · '):'رِی دارد نزدیک می‌شود…';
-   this.panel.querySelector('b').textContent=e.config.label??e.id;this.panel.querySelector('p').textContent=status;
-   const html=commands.map(c=>'<button data-story-action="op:'+escapeHTML(c.id)+'">'+escapeHTML(c.label)+'</button>').join('');
-   if(html!==this.panelContent){this.panelContent=html;this.panel.querySelector(':scope>div').innerHTML=html;}
-  }
-  this.layout.update(scene,selected,this.config.goal(s));
+  this.root.querySelector('.story-context').hidden=true;this.root.querySelector('.story-unplug').hidden=true;
+  this.inspector.update(s,tool,selected,interactions);
+  this.layout.update(scene,selected,this.config.goal(s),interactions);
  }
 }

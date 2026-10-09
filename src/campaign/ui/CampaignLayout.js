@@ -12,15 +12,29 @@ export class CampaignLayout {
   const console=document.createElement('footer');console.className='campaign-console';stage.append(console);
   const messages=document.createElement('div');messages.className='campaign-message-slot';console.append(messages);messages.append(hud.bubble);
   this.placeholder=document.createElement('p');this.placeholder.className='campaign-message-idle';this.placeholder.textContent='روی زمین حرکت کن؛ برای شناخت هر وسیله روی آن بزن.';messages.append(this.placeholder);
-  console.append(hud.panel);
+  stage.append(hud.panel);
   this.idle=document.createElement('div');this.idle.className='campaign-equipment-legend';this.idle.innerHTML=[['source','منبع ثابت','برق پیوسته'],['battery','باتری','انرژی همراه'],['charger','شارژر','پرکردن باتری']].map(([id,name,detail])=>'<span data-role="'+id+'">'+icon(id)+'<b>'+name+'</b><small>'+detail+'</small></span>').join('');console.append(this.idle);
   const tools=document.createElement('div');tools.className='campaign-tools-row';console.append(tools);
   for(const selector of ['.story-dock','.story-unplug','.story-tool-caption'])tools.append(stage.querySelector(selector));
   this.tools=tools;
+  this.draft=document.createElementNS(NS,'path');this.draft.classList.add('campaign-cable-draft');this.leaders.append(this.draft);
+  this.hoverLabel=document.createElement('span');this.hoverLabel.className='campaign-hover-label';this.hoverLabel.hidden=true;this.viewport.append(this.hoverLabel);
  }
- update(scene,selected,goal){
-  const hud=this.hud;this.placeholder.hidden=!hud.bubble.hidden;this.idle.hidden=!hud.panel.hidden;
-  const caption=hud.root.querySelector('.story-tool-caption');caption.textContent=hud.stage.dataset.tool==='cable'?'منبع ← مصرف‌کننده':hud.stage.dataset.tool==='meter'?'اندازه‌گیری':'حرکت و تعامل';
+ update(scene,selected,goal,interactions){
+  const hud=this.hud;this.placeholder.hidden=!hud.bubble.hidden;this.idle.hidden=true;
+  const caption=hud.root.querySelector('.story-tool-caption');caption.textContent=hud.stage.dataset.tool==='cable'?'کابل مستقل · کشیدن یا دو کلیک':hud.stage.dataset.tool==='meter'?'اندازه‌گیری':'انتخاب و انجام';
+  const i=interactions,cable=i?.cable;
+  const hover=i?.hovered&&scene.project(i.hovered),entity=hud.session.world.get(i?.hovered);
+  this.hoverLabel.hidden=!hover?.visible||!entity;
+  if(!this.hoverLabel.hidden){this.hoverLabel.textContent=entity.config.label;this.hoverLabel.style.left='12px';this.hoverLabel.style.top='12px';}
+  for(const [id,node] of Object.entries(hud.nodes)){
+   node.classList.toggle('cable-compatible',!!(cable?.start&&cable.assess(id).ok));
+   node.classList.toggle('cable-origin',id===cable?.start);
+  }
+  const from=cable?.start&&scene.project(cable.start),to=i?.pointer;
+  this.draft.style.display=from&&to?'':'none';
+  if(from&&to){const assessment=cable.assess(i.hovered);this.draft.dataset.valid=assessment.ok?'true':'false';this.draft.setAttribute('d',`M ${from.x} ${from.y} Q ${(from.x+to.x)/2} ${Math.max(from.y,to.y)+45} ${to.x} ${to.y}`);}
+
   const candidates=Object.entries(hud.nodes).filter(([,b])=>!b.hidden).map(([id])=>{const p=scene.project(id),anchor={x:Math.max(26,Math.min(scene.width-26,p.x)),y:Math.max(26,Math.min(scene.height-26,p.y))};return {id,...p,anchor,x:p.x+(p.x>scene.width-80?-40:40),y:p.y-18,priority:id===selected?3:id===goal?2:0};});
   const stick=hud.root.querySelector('.story-joystick'),blocked=getComputedStyle(stick).display==='none'?[]:[{x:12,y:scene.height-98,w:94,h:88}];
   const player=scene.project('ray',1.5);this.playerTag.hidden=!player?.visible||!hud.stage.classList.contains('story-playing');if(player){this.playerTag.style.left=player.x+'px';this.playerTag.style.top=player.y+'px';if(!this.playerTag.hidden)blocked.push({x:player.x-34,y:player.y-26,w:68,h:26});}

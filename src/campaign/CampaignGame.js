@@ -50,12 +50,12 @@ export class CampaignGame extends FrameGame {
   if(!this.session.started||this.session.completed||this.hud.dialog.open)return;
   if(['hand','cable','meter'].includes(action)){this.interactions.setTool(action);return;}
   if(action==='battery'){this.interactions.setTool('hand');this.interactions.object('battery');return;}
+  if(action==='wire-object'){const id=this.interactions.selected;this.interactions.setTool('cable');if(id)this.interactions.object(id);return;}
   if(action==='disconnect'){this.interactions.unplug();return;}
   if(action==='interact'){const id=this.interactions.nearest();if(id)this.interactions.object(id);return;}
-  if(action.startsWith('op:')){
-   const e=this.session.world.get(this.interactions.selected);if(!e||Math.hypot(e.state.position.x-this.state.player.x,e.state.position.z-this.state.player.z)>1.7)return;
-   this.session.execute(e.id,action.slice(3));this.audio.play('click');this.save();
-  }
+  if(action==='cancel-cable'){this.interactions.cancelCable();return;}
+  if(action.startsWith('unplug:')){this.interactions.unplug(action.slice(7));return;}
+  if(action.startsWith('op:'))this.interactions.command(action.slice(3));
  }
  step(dt){
   const paused=this.hud.dialog.open||!this.session.started||this.focusPaused;this.session.paused=paused;
@@ -69,8 +69,9 @@ export class CampaignGame extends FrameGame {
    }
    this.saveTime+=dt;if(this.saveTime>1.5){this.save();this.saveTime=0;}
   }
+  this.scene.feedback?.update(this.interactions,this.time);
   this.scene.render(this.time,paused?0:dt,this.interactions.selected,this.movement.moving);
-  this.hud.update(this.state,this.scene,this.interactions.tool,this.interactions.selected,this.interactions.nearest(),9,paused?0:dt);
+  this.hud.update(this.state,this.scene,this.interactions.tool,this.interactions.selected,this.interactions.nearest(),9,paused?0:dt,this.interactions);
  }
  dispose(){this.setActive(false);super.dispose();this.scene.dispose();this.audio.dispose();this.hud.dispose();}
 }

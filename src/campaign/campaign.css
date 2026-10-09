@@ -85,3 +85,43 @@
 .campaign-equipment-legend svg{grid-row:span 2;width:24px;height:24px}.campaign-equipment-legend b{font-size:12px;font-weight:normal}.campaign-equipment-legend small{font-size:10px;color:#99ac98}
 .campaign-equipment-legend [data-role=source] svg{color:#f2cd96}.campaign-equipment-legend [data-role=battery] svg{color:#f2df9c}.campaign-equipment-legend [data-role=charger] svg{color:#a3d8d0}
 @media(max-width:700px){.campaign-equipment-legend{gap:14px;justify-content:space-around}.campaign-equipment-legend>span{display:flex;flex-direction:column;gap:4px}.campaign-equipment-legend small{font-size:9px}}
+
+/* Desktop inspection stays beside the world; messages and tool modes stay below it. */
+@media(min-width:1000px) and (min-height:561px){
+ .campaign-framed{grid-template-columns:minmax(0,1fr) 248px;direction:ltr}
+ .campaign-framed .story-hud{grid-column:1/-1;direction:rtl}
+ .campaign-viewport{grid-column:1;grid-row:2}
+ .campaign-framed .campaign-object-tools{grid-column:2;grid-row:2;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:14px;min-height:0;max-height:none;overflow-y:auto;margin:0;padding:18px 14px;direction:rtl;background:#303b31;border-left:1px solid #a8ab8050}
+ .campaign-framed .campaign-object-tools header{padding-bottom:12px;border-bottom:1px solid #a8ab8040}
+ .campaign-framed .campaign-object-tools b{font-size:16px}.campaign-framed .campaign-object-tools p{font-size:13px;line-height:1.9;max-height:none;overflow:visible}
+ .campaign-framed .campaign-object-tools>div{display:flex;flex-direction:column;align-items:stretch;overflow:visible;gap:8px;padding:0}
+ .campaign-framed .campaign-object-tools button{width:100%;max-width:none;min-height:38px;text-align:right;padding:8px 10px;font-size:13px}
+ .campaign-console{grid-column:1/-1;grid-template-columns:1fr auto;align-items:center;padding:6px 18px;gap:20px}
+ .campaign-message-slot{grid-column:1;height:58px;border:0}.campaign-framed .story-bubble{font-size:14px;max-height:54px}
+ .campaign-tools-row{grid-column:2;grid-row:1;min-height:56px}
+}
+.campaign-object-tools .inspector-observation{color:#e4d9b6;border-inline-start:2px solid #b6ad7c;padding-inline-start:9px}
+.campaign-object-tools button:hover{background:#607250;border-color:#ded0a4}
+.campaign-object-tools button:focus-visible{outline:2px solid #f0d48a;outline-offset:2px}
+.inspector-wire{display:flex;flex-direction:column;gap:5px;padding:8px;background:#202e2666;border-radius:6px}
+.inspector-wire span{font-size:12px;line-height:1.7}
+.campaign-framed .story-hotspots button.cable-compatible{border-color:#acdaa1;box-shadow:0 0 0 2px #93c68750}
+.campaign-framed .story-hotspots button.cable-origin{border-color:#ffda83;background:#65572e}
+.campaign-cable-draft{fill:none;stroke:#e9bf6e;stroke-width:3;stroke-dasharray:7 5}
+.campaign-cable-draft[data-valid=true]{stroke:#b4e5a7;stroke-dasharray:none}
+.campaign-hover-label{position:absolute;pointer-events:none;z-index:3;transform:none;background:#213129f2;color:#f3e8cb;border:1px solid #abb78c;padding:5px 9px;border-radius:5px;max-width:200px;text-align:center;font-size:13px;line-height:1.6}
+@media(max-width:999px),(max-height:560px){
+ .campaign-framed .campaign-object-tools{grid-row:3;grid-column:1/-1;background:#303b31;padding:8px 12px;margin:0}
+ .campaign-console{grid-row:4}
+ .campaign-object-tools>div>p{display:none}.campaign-object-tools .inspector-wire{min-width:170px}
+}
+
+@media(max-height:560px){
+ .campaign-framed{grid-template-columns:minmax(0,1fr) 210px;grid-template-rows:auto minmax(0,1fr) auto;direction:ltr}
+ .campaign-framed .story-hud{grid-column:1/-1;direction:rtl}
+ .campaign-viewport{grid-column:1;grid-row:2}
+ .campaign-framed .campaign-object-tools{grid-column:2;grid-row:2;min-height:0;max-height:none;display:flex;flex-direction:column;align-items:stretch;overflow:auto;direction:rtl;padding:7px 10px}
+ .campaign-object-tools header{max-width:none}.campaign-framed .campaign-object-tools>div{flex-direction:column;align-items:stretch;overflow:visible}.campaign-framed .campaign-object-tools button{max-width:none;min-height:38px}
+ .campaign-console{grid-column:1/-1;grid-row:3;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 10px}
+ .campaign-message-slot{flex:1;height:48px}.campaign-framed .story-bubble{max-height:44px}.campaign-tools-row{min-height:44px}
+}

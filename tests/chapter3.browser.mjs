@@ -15,8 +15,8 @@ async function waitState(stage,expression){await page.waitForFunction(({key,stag
 try{
  await page.goto(process.env.STORY_TEST_URL||'http://localhost:4173/#workshop');await page.waitForSelector('.story-world canvas');await goStage(9);
  await action('battery');await command('drop');
- await mesh(-.5,0,.7);await command('clear');
- await mesh(-4.6,-1.6,.45);await command('charge-cap');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.energy>=71.9");await command('release-cap');
+ await mesh(-.5,0,.7);await command('clear');await waitState('09-capacitor-passage','s.flags.pathClear===true');
+ await mesh(-4.6,-1.6,.45);await command('charge-cap');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.energy>=71.9");await command('release-cap');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.charging===false");
  await mesh(-3.4,-1.6,.45);await command('carry');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.holder==='ray'");
  await mesh(.1,-1.6,.16);await command('dock-cap');await waitState('09-capacitor-passage','s.flags.capDocked===true');
  await page.screenshot({path:'.test-artifacts/chapter3-09-docked-desktop.png'});

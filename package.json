@@ -10,8 +10,8 @@
     "test:browser": "node tests/workshop.browser.mjs",
     "test:components": "node tests/components.test.mjs && node tests/component-engine.test.mjs",
     "test:components:browser": "node tests/components.browser.mjs",
-    "test:campaign": "node --test tests/levels-02-04.test.mjs tests/levels-05-08.test.mjs tests/levels-09-12.test.mjs tests/campaign-runtime.test.mjs tests/readability.test.mjs",
-    "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs && node tests/market.browser.mjs && node tests/readability.browser.mjs",
+    "test:campaign": "node --test tests/levels-02-04.test.mjs tests/levels-05-08.test.mjs tests/levels-09-12.test.mjs tests/campaign-runtime.test.mjs tests/readability.test.mjs tests/cable-tool.test.mjs",
+    "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs && node tests/market.browser.mjs && node tests/readability.browser.mjs && node tests/interactions.browser.mjs",
     "test:market:browser": "node tests/market.browser.mjs",
     "test:readability:browser": "node tests/readability.browser.mjs"
   },
