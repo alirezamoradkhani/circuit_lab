@@ -6,7 +6,7 @@ import {presets,componentSpec,createComponent,ComponentWorld} from '/src/campaig
 import {ComponentScene} from '/src/campaign/components/visual/ComponentScene.js';
 import {ComponentView} from '/src/campaign/components/visual/ComponentView.js';
 import {makeMaterials} from '/src/campaign/visual/materials.js';
-const errors=[],materials=makeMaterials(),renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(260,180);renderer.setPixelRatio(1);renderer.outputColorSpace=T.SRGBColorSpace;
+const errors=[],visuals={},materials=makeMaterials(),renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(260,180);renderer.setPixelRatio(1);renderer.outputColorSpace=T.SRGBColorSpace;
 const camera=new T.PerspectiveCamera(35,260/180,.1,100);camera.position.set(2.8,2.5,3.5);camera.lookAt(0,.6,0);
 for(const preset of Object.keys(presets)){
  const article=document.createElement('article'),canvas=document.createElement('canvas');canvas.width=260;canvas.height=180;article.append(canvas);
@@ -16,6 +16,7 @@ for(const preset of Object.keys(presets)){
   scene.add(new T.HemisphereLight('#ffe6b8','#323e39',3));const light=new T.DirectionalLight('#fff1cd',3);light.position.set(3,5,4);scene.add(light);
   const view=new ComponentView(scene,materials,e),world=new ComponentWorld([e]);world.tick(.05);view.update(.05,1,world);
   const box=new T.Box3().setFromObject(view.root),size=box.getSize(new T.Vector3());
+  visuals[preset]={width:size.x,height:size.y,depth:size.z,appearance:view.root.userData.appearance};
   if(!['ride','sequence'].includes(preset)&&size.length()===0)throw new Error('Empty visual: '+preset);
   e.state.powered=true;e.state.lit=true;e.state.direction=0;view.update(.05,2,world);
   renderer.render(scene,camera);canvas.getContext('2d').drawImage(renderer.domElement,0,0);
@@ -27,5 +28,5 @@ try{
  const view=new ComponentScene(scene,materials,world);world.tick(.1);view.update(.1,1);renderer.render(scene,camera);view.dispose();
  if(scene.children.length)throw new Error('Scene owner did not clean up');
 }catch(error){errors.push('ComponentScene: '+error.message);}
-renderer.dispose();window.fixtureResult={count:Object.keys(presets).length,errors};
+renderer.dispose();window.fixtureResult={count:Object.keys(presets).length,errors,visuals};
 </script></html>

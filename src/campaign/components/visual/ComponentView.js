@@ -1,6 +1,7 @@
 import * as T from '../../engine/three.js';
 import {group,pipe,ring} from '../../visual/shapes.js';
-import {createRobot,animateRobot} from '../../visual/Robot.js';
+import {characterAsset} from './CharacterAssets.js';
+import {animateRobot} from '../../visual/Robot.js';
 import {createCart,createReel,createReceipt,createLamp,createRadio} from './WorkshopAssets.js';
 import {electricalAsset} from './ElectricalAssets.js';
 import {mechanicalAsset} from './MechanicalAssets.js';
@@ -14,7 +15,7 @@ export class ComponentView {
   const factory=type==='Cart'?createCart:type==='Lamp'?createLamp:type==='Radio'?createRadio:entity.config.visual==='reel'?createReel:entity.config.visual==='receipt'?createReceipt:null;
   if(factory){this.parts=factory(parent,m,{id});this.root=this.parts.root;}
   else if(['Actor','Companion','Guard'].includes(type)){
-   this.robot=createRobot(parent,m,type==='Guard');this.root=this.robot.root;this.root.userData.interaction=id;
+   this.robot=characterAsset(parent,m,entity);this.root=this.robot.root;this.root.userData.interaction=id;
   }else{
    this.root=group(parent,id);
    if(electrical.has(type))this.parts=electricalAsset(this.root,m,entity);

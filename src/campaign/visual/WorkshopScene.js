@@ -2,7 +2,8 @@ import * as T from '../engine/three.js';
 import {makeMaterials} from './materials.js';
 import {buildRoom} from './WorkshopRoom.js';
 import {buildProps} from './WorkshopProps.js';
-import {createRobot,animateRobot} from './Robot.js';
+import {characterAsset} from '../components/visual/CharacterAssets.js';
+import {animateRobot} from './Robot.js';
 import {pipe,ring} from './shapes.js';
 import {cartPosition,portPosition,interactionPosition} from '../workshop/layout.js';
 import {powered} from '../workshop/electricity.js';
@@ -19,7 +20,7 @@ export class WorkshopScene {
     this.cameraTarget=new T.Vector3(0,1,-.3);this.raycaster=new T.Raycaster();this.plane=new T.Plane(new T.Vector3(0,1,0),0);
     this.materials=makeMaterials();this.room=buildRoom(this.scene,this.materials);this.props=buildProps(this.scene,this.materials);
     this.indicators=[];this.scene.traverse(o=>{if(o.userData.powerIndicator)this.indicators.push(o);});
-    this.ray=createRobot(this.scene,this.materials);this.pakro=createRobot(this.scene,this.materials,true);
+    this.ray=characterAsset(this.scene,this.materials,{id:'ray',kind:'Actor',config:{}});this.pakro=characterAsset(this.scene,this.materials,{id:'pakro',kind:'Companion',config:{}});
     this.scene.add(new T.HemisphereLight('#e4e5cc','#555246',2.7));
     const sun=new T.DirectionalLight('#ffe0a7',3.0);sun.position.set(-5,9,5);sun.castShadow=true;
     Object.assign(sun.shadow.camera,{left:-10,right:10,top:9,bottom:-9,near:.1,far:35});
