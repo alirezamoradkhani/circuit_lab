@@ -1,0 +1,10 @@
+import {InfrastructureChallenge} from './InfrastructureChallenge.js';
+export class TransferChallenge extends InfrastructureChallenge {
+ constructor(s){super(s);this.selector='grid';this.states=[1,0,1];[6,3,6].forEach((p,i)=>this.parallel(this.add(['چراغ','ارتباطات','گرم‌کن'][i],144/p)));this.sync();}
+ sync(){this.source.value=this.selector==='off'||this.phase&&this.selector==='grid'?0:12;this.parts.forEach((p,i)=>p.disconnected=!this.states[i]);}
+ get controls(){return [{key:'source',label:'انتخاب‌گر انتقال · ابتدا قطع، سپس منبع دیگر',value:this.selector,options:[['grid','شبکه'],['off','قطع'],['battery','باتری']]},...this.parts.map((p,i)=>({key:String(i),label:p.label,value:this.states[i],options:[[0,'خاموش'],[1,'روشن']]}))];}
+ get status(){return `منبع: ${{grid:'شبکه',off:'قطع',battery:'باتری'}[this.selector]} · ${this.phase?'شبکه در دسترس نیست':'شبکه آماده'} · مصرف ${this.power.toFixed(1)} وات`;}
+ get testLabel(){return this.phase?'آزمون انتقال':'آزمون شبکه';}
+ act(key,value){if(!this.edit())return;if(key==='source'&&['grid','off','battery'].includes(value)){if(this.selector!=='off'&&value!=='off'&&this.selector!==value){this.s.message='اینترلاک اجازهٔ انتقال مستقیم نمی‌دهد؛ انتخاب‌گر را ابتدا روی قطع بگذار.';return;}this.selector=value;}else if(['0','1','2'].includes(key)&&[0,1].includes(+value))this.states[+key]=+value;this.sync();this.s.message=this.status;}
+ test(){if(!this.source.value||!this.states[0]||!this.states[1])return this.reject('چراغ و ارتباطات باید از یک منبع در دسترس برق بگیرند.');if(this.power>(this.selector==='battery'?12:24)){this.s.tripped=true;return this.reject('مصرف بیش از ظرفیت این منبع است؛ بار ضروری را حفظ کن.');}if(!this.phase){if(this.selector!=='grid')return this.reject('ابتدا آزمون مرجع را روی شبکه انجام بده.');this.phase=1;this.sync();this.s.message='آزمون شبکه ثبت شد. اکنون شبکه قطع شده؛ انتقال به باتری را انجام بده.';return false;}return this.selector==='battery'?this.accepted():this.reject('انتقال به منبع پشتیبان هنوز انجام نشده است.');}
+}

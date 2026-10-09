@@ -45,5 +45,5 @@ const storage={getItem:()=>saved,setItem:(_,v)=>saved=v};const progress=new City
 assert.deepEqual(progress.stars,old);assert.equal(progress.unlocked(5),true);assert.equal(progress.unlocked(6),false);
 progress.complete('backup',0);assert.equal(progress.unlocked(6),true);progress.complete('pumps',1);assert.equal(progress.unlocked(7),true);progress.complete('radio',0);
 assert.equal(Object.keys(new CityProgress(storage,'circuit-lab.adventure.v1',adventures).stars).length,8);
-const town=renderTown(adventures,progress,7);assert.ok(town.includes('expanded-town'));assert.ok(!town.includes('undefined'));assert.equal((town.match(/data-mission=/g)||[]).length,8);
+const town=renderTown(adventures,progress,7);assert.ok(town.includes('expanded-town'));assert.ok(!town.includes('undefined'));assert.equal((town.match(/data-mission=/g)||[]).length,adventures.length);
 console.log('PASS: three distinct challenges, phase transitions, overload recovery, startup sequence, loaded divider, alternative solution and old-save compatibility.');

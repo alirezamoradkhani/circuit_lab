@@ -8,6 +8,7 @@ export function parallelBoard(s,powers){
   return powers.map((power,i)=>{const p=b.add('resistor');p.value=144/power;p.label=deviceLabels[s.mission.id][i];b.connect(sw.id+':1',p.id+':0');b.connect(p.id+':1',source.id+':1');return p;});
 }
 export const extraSpecs={
+ ...Object.fromEntries(['feeder','isolation','transfer','bridge'].map(id=>[id,{id,parts:{battery:1,switch:1,resistor:1}}])),
   backup:{id:'backup',parts:{battery:1,switch:1,resistor:4}},
   pumps:{id:'pumps',parts:{battery:1,switch:1,resistor:3}},
   radio:{id:'radio',parts:{battery:1,switch:1,resistor:3}},
