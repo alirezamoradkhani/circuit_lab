@@ -1,3 +1,5 @@
+import {CampaignLayout} from './CampaignLayout.js';
+import {icon} from './icons.js';
 import {SceneHUD} from './SceneHUD.js';
 import {Device,Source,SourceSelector} from '../components/index.js';
 import {campaignCatalog} from '../levels/catalog.js';
@@ -32,6 +34,7 @@ export class CampaignHUD extends SceneHUD {
  constructor(root,onAction,session,completed){
   const names=Object.fromEntries(session.world.all().filter(e=>e.config.interactive!==false&&!e.config.hidden&&!['Sequence','PathRide','Fog'].includes(e.kind)&&e.id!=='ray').map(e=>[e.id,e.config.label??e.id]));
   super(root,onAction,{
+   safeInsets:{top:26,bottom:26},messagesOutsideScene:true,
    names,pins:session.world.all().filter(e=>e instanceof Device||e instanceof Source||e instanceof SourceSelector||e.kind==='Resistor').map(e=>e.id),
    labels:{chapter:'مدار گمشده / مرحلهٔ '+fa(session.definition.number),title:session.definition.title,introChapter:'ایستگاه '+fa(session.definition.number),introTitle:session.definition.title,introText:session.definition.intro},
    available:(id)=>{const e=session.world.get(id);return e.state.visible&&!e.state.collected;},goal:()=>session.definition.ready(session.world,session.ctx)?'exit':session.definition.focus?.(session.world,session.ctx)??null,objective:()=>session.objective(),
@@ -43,7 +46,9 @@ export class CampaignHUD extends SceneHUD {
   this.session=session;this.stage.classList.add('campaign-stage');
   const begin=root.querySelector('[data-story-action="begin"]');begin.textContent='ورود به ماموریت';
   const nav=document.createElement('button');nav.dataset.storyAction='levels';nav.title='انتخاب مرحله';nav.setAttribute('aria-label','انتخاب مرحله');nav.textContent='☷';root.querySelector('.story-small-tools').prepend(nav);
-  this.panel=document.createElement('section');this.panel.className='campaign-object-tools';this.panel.hidden=true;this.panel.setAttribute('aria-label','ابزارهای وسیلهٔ انتخاب‌شده');this.panel.innerHTML='<b></b><p></p><div></div>';this.stage.append(this.panel);
+  this.panel=document.createElement('section');this.panel.className='campaign-object-tools';this.panel.hidden=true;this.panel.setAttribute('aria-label','ابزارهای وسیلهٔ انتخاب‌شده');this.panel.innerHTML='<header><b></b><p></p></header><div></div>';this.stage.append(this.panel);
+  for(const [id,node]of Object.entries(this.nodes)){const e=session.world.get(id),kind=e.kind;const role=kind==='Source'?'source':kind==='Battery'?'battery':kind==='Charger'||e.config.visual==='charger'?'charger':kind==='Guard'?'guard':null;if(role){node.dataset.role=role;node.querySelector('svg').outerHTML=icon(role); }node.title=e.config.label??id;}
+  this.layout=new CampaignLayout(this);
  }
  update(s,scene,tool,selected,nearest,intro,dt){
   super.update(s,scene,tool,selected,nearest,intro,dt);
@@ -54,10 +59,8 @@ export class CampaignHUD extends SceneHUD {
    const commands=near?this.session.commands(selected):[],status=near?[equipmentStatus(e,this.session.world),this.session.definition.status?.(this.session.world,selected,this.session.ctx)].filter(Boolean).join(' · '):'رِی دارد نزدیک می‌شود…';
    this.panel.querySelector('b').textContent=e.config.label??e.id;this.panel.querySelector('p').textContent=status;
    const html=commands.map(c=>'<button data-story-action="op:'+escapeHTML(c.id)+'">'+escapeHTML(c.label)+'</button>').join('');
-   if(html!==this.panelContent){this.panelContent=html;this.panel.querySelector('div').innerHTML=html;}
-   const p=scene.project(selected),height=this.panel.offsetHeight;
-   if(p){this.panel.style.left=Math.max(130,Math.min(scene.width-130,p.x))+'px';this.panel.style.top=Math.max(scene.height<480?76:145,Math.min(scene.height-height-140,p.y-height-25))+'px';}
+   if(html!==this.panelContent){this.panelContent=html;this.panel.querySelector(':scope>div').innerHTML=html;}
   }
-  if(!this.bubble.hidden){this.bubble.style.left=(scene.width/2)+'px';this.bubble.style.top=Math.max(150,scene.height-250)+'px';}
+  this.layout.update(scene,selected,this.config.goal(s));
  }
 }

@@ -14,7 +14,7 @@ try{
  await page.goto(base);await page.waitForSelector('.story-world canvas');
  await action(page,'levels');await action(page,'stage:2');await page.waitForSelector('.campaign-stage');await action(page,'begin');
  await action(page,'cable');await object(page,'sign');await object(page,'supply');
- const supplyPoint=await page.locator('[data-story-object="supply"]').evaluate(e=>({x:parseFloat(e.style.left),y:parseFloat(e.style.top)}));
+ const supplyPoint=await page.evaluate(async()=>{const T=await import('/src/campaign/engine/three.js'),r=document.querySelector('.story-world canvas').getBoundingClientRect(),a=r.width/r.height,h=Math.max(7.3,9.4/a),c=new T.OrthographicCamera(-h*a,h*a,h,-h,.1,100);c.position.set(8,13.7,19);c.lookAt(0,.7,0);c.updateMatrixWorld();const p=new T.Vector3(-5,.8,-2.5).project(c);return {x:(p.x*.5+.5)*r.width,y:(-.5*p.y+.5)*r.height};});
  await action(page,'hand');const canvas=await page.locator('.story-world canvas').boundingBox();await page.mouse.click(canvas.x+supplyPoint.x,canvas.y+supplyPoint.y+12);await page.waitForSelector('[data-story-action="op:reset"]',{timeout:20000});await action(page,'op:reset');
  await page.waitForFunction(({key})=>JSON.parse(localStorage.getItem(key))?.levels['02-wind-alley']?.flags.bridgeBuilt,{key:saveKey},{timeout:15000});
  await page.screenshot({path:'.test-artifacts/campaign-wind-desktop.png'});

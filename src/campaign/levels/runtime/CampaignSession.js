@@ -49,5 +49,7 @@ export class CampaignSession extends ComponentLevel {
  objective(){return this.definition.objective(this.world,this.ctx);}
  hint(){return this.definition.hint(this.world,this.ctx);}
  snapshot(){return {...super.snapshot(),flags:structuredClone(this.flags),started:this.started,completed:this.completed};}
- restore(saved){super.restore(saved);this.flags=structuredClone(saved.flags??{});this.ctx.flags=this.flags;this.started=saved.started===true;this.completed=saved.completed===true;}
+ restore(saved){super.restore(saved);
+  // Fixed infrastructure follows the current scene layout; movable puzzle objects retain their saved positions.
+  for(const e of this.world.all())if(['Source','Charger'].includes(e.kind))e.state.position={...e.initial.position};this.flags=structuredClone(saved.flags??{});this.ctx.flags=this.flags;this.started=saved.started===true;this.completed=saved.completed===true;}
 }

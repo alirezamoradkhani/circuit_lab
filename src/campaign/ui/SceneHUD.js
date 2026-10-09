@@ -70,7 +70,7 @@ export class SceneHUD {
       b.hidden=!shown||!s.started||intro<4.6;
       if(b.hidden||!point)continue;
       // Off-screen goal remains an edge marker in portrait mode; tapping it walks there.
-      const top=scene.height<480?70:132,bottom=scene.height<480?95:168;
+      const top=this.config.safeInsets?.top??(scene.height<480?70:132),bottom=this.config.safeInsets?.bottom??(scene.height<480?95:168);
       b.classList.toggle('offscreen',!point.visible||point.y<top||point.y>scene.height-bottom);
       b.dataset.edge=point.x<85?'left':point.x>scene.width-85?'right':'center';
       b.style.left=Math.max(24,Math.min(scene.width-24,point.x))+'px';
@@ -79,6 +79,7 @@ export class SceneHUD {
     }
     if(!this.bubble.hidden){
       this.messageRemaining-=dt;if(this.messageRemaining<=0)this.bubble.hidden=true;
+      if(this.config.messagesOutsideScene)return;
       const p=scene.project('battery',s);
       this.bubble.style.left=Math.max(145,Math.min(scene.width-145,p.x))+'px';
       this.bubble.style.top=Math.max(135,Math.min(scene.height-230,p.y-75))+'px';

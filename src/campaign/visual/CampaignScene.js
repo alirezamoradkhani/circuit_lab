@@ -20,13 +20,14 @@ export class CampaignScene {
  resize(){
   this.width=this.host.clientWidth;this.height=this.host.clientHeight;if(!this.width||!this.height)return;
   this.mobile=this.width<680||this.height<480;const aspect=this.width/this.height;
-  const half=this.mobile&&!this.overview?(this.height<480?4.8:6.2):Math.max(7.3,9.4/aspect);
+  const half=this.mobile&&!this.overview?(this.height<300?2.8:this.height<480?4.8:6.2):Math.max(7.3,9.4/aspect);
   Object.assign(this.camera,{left:-half*aspect,right:half*aspect,top:half,bottom:-half});this.camera.updateProjectionMatrix();this.renderer.setSize(this.width,this.height,false);
  }
  toggleOverview(){this.overview=!this.overview;this.resize();}
- project(id){
-  const e=this.session.world.get(id);if(!e)return null;const p=e.state.position;
-  const v=new T.Vector3(p.x,p.y+(e.config.labelHeight??.85),p.z).project(this.camera);
+ project(id,labelHeight){
+  const e=this.session.world.get(id);if(!e)return null;const carried=id==='battery'&&e.state.holder==='ray',p=carried?this.entities.views.get(id).root.position:e.state.position;
+  if(carried&&typeof labelHeight!=='number')labelHeight=.4;
+  const v=new T.Vector3(p.x,p.y+(typeof labelHeight==='number'?labelHeight:e.config.labelHeight??.85),p.z).project(this.camera);
   return {x:(v.x*.5+.5)*this.width,y:(-.5*v.y+.5)*this.height,visible:Math.abs(v.x)<.98&&Math.abs(v.y)<.95&&v.z>-1&&v.z<1};
  }
  pick(clientX,clientY){
@@ -49,7 +50,7 @@ export class CampaignScene {
  render(time,dt,selected,moving){
   const s=this.session,ray=s.ray,p=ray.state.position;ray.state.mode=moving?'follow':'idle';this.entities.update(dt,time);
   for(const view of this.entities.views.values())if(view.entity.config.hidden)view.root.visible=false;
-  const battery=this.entities.views.get('battery');if(battery&&s.world.get('battery').state.holder==='ray')battery.root.visible=false;
+  const battery=this.entities.views.get('battery');if(battery){const carried=s.world.get('battery').state.holder==='ray';battery.root.scale.setScalar(carried?.45:1);if(carried){battery.root.visible=true;battery.root.position.set(p.x-.43,p.y+.55,p.z+.12);}}
   this.environment.update(s.definition.obstacles?.(s.world,s.ctx)??[],s.world);this.updateWires();
   const target=this.mobile&&!this.overview?new T.Vector3(T.MathUtils.clamp(p.x*.75,-4,4),.8+p.y*.3,p.z*.35):new T.Vector3(0,.7,0);
   this.target.lerp(target,Math.min(1,dt*7||1));this.camera.position.copy(this.target).add(this.offset);this.camera.lookAt(this.target);this.camera.updateMatrixWorld();

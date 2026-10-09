@@ -4,7 +4,7 @@ function latchAllowed(w,ctx){const c=w.connections.get('latch');if(!c)return fal
 function drive(w,ctx,target){const lift=w.get('lift');if(w.connections.get('latch')?.source==='supply')return 'کابل سرویس به قفل بالا وصل است؛ پیش از حرکت آن را جدا کن.';if(!near(w.get('ray'),lift,1.8))return 'اول کنار سکوی آسانسور برو.';ctx.flags.riding=true;w.get('ray').state.position={...lift.state.position};lift.act('move',target);lift.state.enabled=true;return target?'رِی سوار شد؛ فرمان صعود ثبت شد.':'فرمان بازگشت به پایین ثبت شد.';}
 export default function createDefinition(){return {
  id:'04-elevator',number:4,title:'آسانسور بی‌حوصله',theme:'elevator',intro:'بلندگو: «به پشت‌بام خوش آمدید!» نورا: «هنوز پایینیم؛ خود سکو را ببین.» باتری همراه برای موتور ضعیف است، اما قفل در بالا را باز می‌کند.',start,exit,bounds:{minX:-6,maxX:6,minZ:-4,maxZ:4},
- components:[...baseComponents(start,exit).map(c=>['supply','charger'].includes(c.id)?{...c,position:{...c.position,z:2.5}}:c),
+ components:[...baseComponents(start,exit).map(c=>['supply','charger'].includes(c.id)?{...c,position:c.id==='charger'?p(-4,1.2):p(-5,2.5)}:c),
  spec('elevator','lift','سکوی آسانسور · شروع ۲۴ وات',0,2,{from:bottom,to:top,travelSeconds:3,portable:false}),
  spec('lamp','lamp','چراغ بارانداز · ۳ وات',-2,2.5,{portable:false}),
  spec('table','console','کنترل و محافظ آسانسور',-1.5,2,{portable:false}),

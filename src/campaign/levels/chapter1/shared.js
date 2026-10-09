@@ -10,6 +10,6 @@ export function baseComponents(start,exit,maxWatts=24){return [
  spec('battery','battery','باتری همراه · ۷۲ ژول',start.x,start.z),
  spec('landing','exit','مسیر خروج',exit.x,exit.z,{position:exit,portable:false}),
  spec('mains','supply',`منبع ثابت · ${maxWatts} وات`,-5,-2.5,{maxWatts,portable:false}),
- spec('charger','charger','جایگاه شارژ باتری',-4.5,-2.5,{watts:Math.min(12,maxWatts),target:'battery',portable:false})
+ spec('charger','charger','جایگاه شارژ باتری',-5,0,{watts:Math.min(12,maxWatts),target:'battery',portable:false})
 ];}
 export function setupBase(world){world.get('battery').state.holder='ray';world.connect('supply','charger');}

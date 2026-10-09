@@ -39,7 +39,7 @@ export class CampaignGame extends FrameGame {
   if(action.startsWith('stage:')){this.options.onStage?.(Number(action.slice(6)));return;}
   if(action==='next'){this.options.onNext?.();return;}
   if(action==='replay'||action==='restart'){this.options.onRestart?.(action==='replay');return;}
-  if(action==='begin'){this.session.started=true;this.hud.message(this.session.objective(),'info',7);this.save();return;}
+  if(action==='begin'){this.session.started=true;this.hud.message('رِی با نشان «شما» مشخص است؛ روی زمین بزن تا حرکت کند.','info',7);this.save();return;}
   if(action==='view'){this.scene.toggleOverview();return;}
   if(action==='sound'){const on=this.audio.toggle();this.root.querySelector('[data-story-action="sound"]').setAttribute('aria-pressed',String(!on));return;}
   if(['help','reset','bag','circuit','levels'].includes(action)){this.movement.clear();this.save();this.hud.showDialog(action,this.state,this.saved);return;}

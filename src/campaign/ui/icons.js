@@ -1,4 +1,7 @@
 const paths={
+ source:'M14 2L5 13h6l-1 9 9-12h-6z',
+ charger:'M7 3v5m10-5v5M5 8h14v4a7 7 0 01-14 0zm7 11v3M9 12l3 3 3-3',
+ guard:'M5 20h14M7 18V8a5 5 0 0110 0v10M6 8h12m-9 4h6m-7 4h8',
  key:'M14 10a5 5 0 11-10 0 5 5 0 0110 0zm0 0h8m-2 0v4m-4-4v3',
  hand:'M9 12V5a2 2 0 014 0v6m0-4a2 2 0 014 0v5m0-3a2 2 0 014 0v6c0 4-3 7-7 7h-1c-2 0-4-1-5-3l-4-6a2 2 0 013-2l2 2',
  cable:'M7 3v5m4-5v5M5 8h8v3a4 4 0 01-8 0V8zm4 7v2a4 4 0 008 0v-3m-2 0h4',
