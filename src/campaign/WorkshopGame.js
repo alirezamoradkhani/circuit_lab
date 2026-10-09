@@ -1,3 +1,4 @@
+import {stageMenu} from './ui/CampaignHUD.js';
 import {workshopNavigation} from './engine/navigation.js';
 import {FrameGame} from './engine/FrameGame.js';
 import {WorkshopScene} from './visual/WorkshopScene.js';
@@ -8,12 +9,14 @@ import {bindWorkshopInput} from './engine/input.js';
 import {InteractionController} from './workshop/InteractionController.js';
 import {freshState,restoreState,snapshot,resetObjects,SAVE_KEY,tick,powered} from './workshop/state.js';
 export class WorkshopGame extends FrameGame {
-  constructor(root){
-    super(root);this.saved=true;this.time=0;this.saveTime=0;
-    try{this.storage=window.localStorage;this.state=restoreState(JSON.parse(this.storage.getItem(SAVE_KEY)));}
+  constructor(root,options={}){
+    super(root);this.options=options;this.saveKey=options.replay?SAVE_KEY+'.replay':SAVE_KEY;this.saved=true;this.time=0;this.saveTime=0;
+    try{this.storage=window.localStorage;this.state=restoreState(JSON.parse(this.storage.getItem(this.saveKey)));}
     catch{this.state=freshState();this.saved=false;}
+    if(options.fresh)this.state=freshState();
     this.intro=this.state.started?9:0;this.save();
     this.hud=new WorkshopHUD(root,action=>this.action(action));
+    const menu=document.createElement('button');menu.dataset.storyAction='levels';menu.setAttribute('aria-label','انتخاب مرحله');menu.title='انتخاب مرحله';menu.textContent='☷';root.querySelector('.story-small-tools').prepend(menu);
     this.scene=new WorkshopScene(this.hud.world);
     this.audio=new WorkshopAudio();this.movement=new Movement(this,workshopNavigation);
     this.interactions=new InteractionController(this);this.interactions.setTool('hand');
@@ -21,7 +24,7 @@ export class WorkshopGame extends FrameGame {
     if(this.state.completed)this.hud.showDialog('complete',this.state,this.saved);
   }
   save(){
-    try{this.storage?.setItem(SAVE_KEY,JSON.stringify(snapshot(this.state)));this.saved=!!this.storage;}
+    try{this.storage?.setItem(this.saveKey,JSON.stringify(snapshot(this.state)));this.saved=!!this.storage;}
     catch{this.saved=false;}
   }
   setActive(active){
@@ -31,6 +34,9 @@ export class WorkshopGame extends FrameGame {
   }
   action(action){
     if(!this.active)return;this.audio.unlock();
+    if(action==='next'){this.options.onNext?.();return;}
+    if(action.startsWith('stage:')){this.options.onStage?.(Number(action.slice(6)));return;}
+    if(action==='levels'){this.movement.clear();this.hud.showDialog('help',this.state,this.saved);this.root.querySelector('[data-dialog-content]').innerHTML=stageMenu(1,this.options.completed?.()??[]);return;}
     if(action==='close'){this.hud.closeDialog();this.last=performance.now();return;}
     if(action==='begin'){
       this.state.started=true;this.intro=0;this.save();this.scene.renderer.domElement.focus({preventScroll:true});return;
@@ -72,7 +78,7 @@ export class WorkshopGame extends FrameGame {
       if(event==='cart')this.interactions.selected=null;
       this.audio.play(event);
       if(messages[event])this.hud.message(messages[event],event==='empty'?'error':'success',6);
-      if(event==='complete'){this.movement.clear();this.hud.showDialog('complete',this.state,this.saved);}
+      if(event==='complete'){this.options.onComplete?.(1);this.movement.clear();this.hud.showDialog('complete',this.state,this.saved);}
       this.save();
     }
   }
@@ -92,5 +98,5 @@ export class WorkshopGame extends FrameGame {
     this.scene.render(this.state,this.time,this.movement.moving||this.state.pushing,this.intro,this.interactions.selected,paused?0:dt);
     this.hud.update(this.state,this.scene,this.interactions.tool,this.interactions.selected,this.interactions.nearest(),this.intro,paused?0:dt);
   }
-  dispose(){this.setActive(false);this.abort.abort();this.scene.dispose();this.audio.dispose();}
+  dispose(){this.setActive(false);this.abort.abort();this.scene.dispose();this.audio.dispose();this.hud.dispose();}
 }

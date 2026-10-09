@@ -16,6 +16,6 @@ export function dialogContent(kind,s,saved=true){
   if(kind==='reset')return '<span class="story-kicker">بازچینی تعمیرگاه</span><h2>چطور دوباره شروع کنیم؟</h2><p>بازچینی وسایل، رسید و ضامنِ بازشده را نگه می‌دارد. شروع تازه، پیشرفت همین مرحله را پاک می‌کند.</p><div class="story-dialog-actions"><button data-story-action="recover">فقط بازچینی وسایل</button><button data-story-action="restart">شروع تازه</button></div>';
   if(kind==='complete')return '<span class="story-kicker">مرحلهٔ ۰۱ تمام شد</span><h2>یک در باز شد.<br>یک داستان شروع شد.</h2><p>رد پاک‌رو به کوچه می‌رسد. تو رسید را پیدا کردی و با '+(s.route==='mains'?'کابل بلند تعمیرگاه':'برق خود رِی')+' کرکره را باز کردی.</p>'+
     (s.secret?'<p class="story-reward">♫ یادگاری این مرحله: شیفت صبح</p>':'<p>یک موسیقی کوچک هنوز در تعمیرگاه پنهان است…</p>')+
-    '<p class="story-subtle">فعلاً مرحلهٔ اول قابل بازی است؛ مرحلهٔ دوم هنوز پیاده‌سازی نشده.</p><div class="story-dialog-actions"><button data-story-action="restart">دوباره بازی کن</button><button data-story-action="lab">بازگشت به آزمایشگاه</button></div>';
+    '<p class="story-subtle">رد پاک‌رو از کانال کوچه می‌گذرد.</p><div class="story-dialog-actions"><button data-story-action="next">ادامه؛ بادِ خلاف</button><button data-story-action="levels">مسیر داستان</button><button data-story-action="restart">دوباره بازی کن</button><button data-story-action="lab">بازگشت به آزمایشگاه</button></div>';
   return workshopHelp(s,saved);
 }

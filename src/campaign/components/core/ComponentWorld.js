@@ -93,7 +93,7 @@ export class ComponentWorld {
       if(entity.state.collected)entity.state.visible=false;
     }
   }
-  measure(id){const e=this.get(id);if(!e)return null;return e instanceof Source?{voltage:e.available()?e.voltage:0,maxWatts:e.maxWatts,energy:e.energyAvailable()}:e.measure?.()??copy(e.state);}
+  measure(id){const e=this.get(id);if(!e)return null;return e instanceof Source?{voltage:e.available()?e.voltage:0,maxWatts:e.maxWatts,energy:e.energyAvailable()}:e.measure?.(this)??copy(e.state);}
   snapshot(){return {version:1,entities:this.all().map(e=>e.snapshot()),connections:[...this.connections.entries()].map(copy)};}
   restore(saved){
     if(saved?.version!==1||!Array.isArray(saved.entities)||saved.entities.length!==this.entities.size)throw new TypeError('Invalid world snapshot');

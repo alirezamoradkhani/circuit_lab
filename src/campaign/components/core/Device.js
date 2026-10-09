@@ -11,5 +11,5 @@ export class Device extends Entity {
     if (action !== 'toggle') return false;
     this.state.enabled = value ?? !this.state.enabled; return true;
   }
-  measure() { return {voltage: this.state.voltage, watts: this.state.powered ? this.demand() : 0}; }
+  measure(world) { return {voltage: this.state.voltage, watts: this.state.powered ? this.demand(world) : 0}; }
 }
