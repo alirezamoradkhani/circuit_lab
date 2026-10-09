@@ -1,4 +1,5 @@
-import {renderTown} from './scene.js?v=missions9';
+import {CityDrafts} from './CityDrafts.js';
+import {renderOperations,operationsHero} from './CityOverview.js';
 import {adventures} from './adventureData.js?v=missions9';
 import {AdventureSession} from './AdventureSession.js?v=missions9';
 import {renderAdventure} from './AdventureView.js?v=missions9';
@@ -10,8 +11,8 @@ export class CityGame {
     this.root=root;this.index=null;this.active=false;this.sessions=new Map();
     let storage;try{storage=window.localStorage;}catch{}
     // New gameplay has separate completion records from the old circuit-only mode.
-    this.progress=new CityProgress(storage,'circuit-lab.adventure.v1',adventures);
-    root.innerHTML=`<div class="city-home"><section class="city-overview"><div><span class="eyebrow">داستان تعاملی · بازگشت روشنایی</span><h1>یک شهر منتظر توست</h1><p>با مردم گفت‌وگو کن، خرابی‌ها را پیدا کن و زندگی را به محله برگردان.</p></div><div class="city-meter"><b data-progress></b><span>مکان بازسازی‌شده</span><progress max="${adventures.length}" value="0" aria-label="پیشرفت بازسازی شهر"></progress></div></section><div class="city-map" aria-label="نقشهٔ شهر"></div><p class="city-save" data-save></p><div class="campaign-ending" hidden><h2>محله دوباره روشن است!</h2><p>از یک چراغ خاموش تا بازگرداندن برق یک محله؛ کار تیم تعمیرات تمام شد. می‌توانی برای ستاره‌های بیشتر به مکان‌ها برگردی.</p></div></div><div class="adventure-layout" hidden><aside class="adventure-sidebar"><button data-action="map">→ بازگشت به خیابان</button><details class="adventure-missions" open><summary>مأموریت‌های محله</summary><nav data-missions aria-label="مأموریت‌های شهر"></nav></details><p>بررسی ← اندازه‌گیری ← تعمیر ← آزمایش</p></aside><main class="adventure-work" data-stage></main></div>`;
+    this.progress=new CityProgress(storage,'circuit-lab.adventure.v1',adventures,{openAccess:true});this.district='all';this.drafts=new CityDrafts(storage);
+    root.innerHTML=`<div class="city-home"><section class="operations-hero"></section><section class="operations-heading"><div><span class="eyebrow">میز مأموریت‌ها</span><h2>از هر نقطهٔ شهر شروع کن</h2><p>مأموریت‌های آشنایی برای شروع؛ مأموریت‌های تخصصی برای تصمیم‌های چندمرحله‌ای.</p></div><div class="city-meter"><b data-progress></b><progress max="${adventures.length}" value="0" aria-label="پیشرفت بازسازی"></progress></div></section><div class="city-map"></div><p class="city-save" data-save></p><div class="campaign-ending" hidden><h2>همهٔ گزارش‌ها تأیید شدند</h2><p>می‌توانی برای بهبود کیفیت تحویل، مأموریت‌ها را دوباره انجام بدهی.</p></div></div><div class="adventure-layout" hidden><aside class="adventure-sidebar"><button data-action="map">→ مرکز عملیات</button><details class="adventure-missions" open><summary>مأموریت‌ها</summary><nav data-missions aria-label="مأموریت‌های شهر"></nav></details><p>گزارش · اندازه‌گیری · تعمیر · تحویل</p></aside><main class="adventure-work" data-stage></main></div>`;
     this.shopInteractions=new ShopInteractions(root,()=>this.active?this.sessions.get(this.index):null,()=>this.renderGame());
     root.addEventListener('click',e=>this.handle(e));
     root.addEventListener('cancel',e=>{if(e.target.matches('.circuit-dialog')){e.preventDefault();this.closeCircuit();}},true);
@@ -28,14 +29,15 @@ export class CityGame {
     const count=Object.keys(this.progress.stars).length;
     this.el('[data-progress]').textContent=`${count.toLocaleString('fa-IR')} / ${adventures.length.toLocaleString('fa-IR')}`;
     this.el('progress').value=count;
-    this.el('.city-map').innerHTML=renderTown(adventures,this.progress,this.index);
-    this.el('[data-save]').textContent=this.progress.saved?'ستاره‌ها در همین مرورگر ذخیره می‌شوند؛ تعمیر نیمه‌تمام تا زمان باز بودن صفحه حفظ می‌شود.':'ذخیره‌سازی مرورگر در دسترس نیست؛ پیشرفت فقط تا زمان بستن صفحه باقی می‌ماند.';
+    this.el('.operations-hero').innerHTML=operationsHero(adventures,this.progress);
+    this.el('.city-map').innerHTML=renderOperations(adventures,this.progress,this.index,this.district,this.sessions);
+    this.el('[data-save]').textContent=this.progress.saved&&this.drafts.saved?'نتیجه و تعمیر نیمه‌تمام در همین مرورگر ذخیره می‌شوند؛ می‌توانی بعداً ادامه بدهی.':'ذخیره‌سازی در دسترس نیست؛ تعمیرهای این نشست تا زمان بازبودن صفحه حفظ می‌شوند.';
     this.el('.campaign-ending').hidden=count!==adventures.length;
-    this.el('[data-missions]').innerHTML=adventures.map((m,i)=>`<button data-mission="${i}" ${this.progress.unlocked(i)?'':'disabled'} ${i===this.index?'aria-current="step"':''}><span>${(i+1).toLocaleString('fa-IR')}</span><div><b>${m.title}</b><small>${this.progress.stars[m.id]?'★'.repeat(this.progress.stars[m.id]):this.sessions.has(i)?'در حال تعمیر':this.progress.unlocked(i)?m.skill:'پس از مأموریت قبلی'}</small></div></button>`).join('');
+    this.el('[data-missions]').innerHTML=adventures.map((m,i)=>`<button data-mission="${i}" ${this.progress.unlocked(i)?'':'disabled'} ${i===this.index?'aria-current="step"':''}><span>${(i+1).toLocaleString('fa-IR')}</span><div><b>${m.title}</b><small>${this.progress.stars[m.id]?'کیفیت تحویل '+this.progress.stars[m.id].toLocaleString('fa-IR')+' از ۳':this.sessions.has(i)?'در حال تعمیر':this.progress.unlocked(i)?m.skill:'پس از مأموریت قبلی'}</small></div></button>`).join('');
   }
   start(index){
     if(!this.progress.unlocked(index))return;
-    this.index=index;if(!this.sessions.has(index))this.sessions.set(index,new AdventureSession(index));
+    this.index=index;if(!this.sessions.has(index))this.sessions.set(index,this.drafts.attach(new AdventureSession(index)));
     this.el('.city-home').hidden=true;this.el('.adventure-layout').hidden=false;
     this.el('.adventure-missions').open=!window.matchMedia('(max-width:800px)').matches;
     this.renderMap();this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});
@@ -61,12 +63,13 @@ export class CityGame {
   }
   showMap(){
     this.el('.city-home').hidden=false;this.el('.adventure-layout').hidden=true;this.renderMap();
-    this.el(`.city-map [data-mission="${this.index??0}"]`).focus({preventScroll:true});this.root.scrollIntoView({block:'start'});
+    this.el(`.city-map [data-mission="${this.index??0}"]`)?.focus({preventScroll:true});this.root.scrollIntoView({block:'start'});
   }
   handle(e){
     if(!this.active)return;
-    const button=e.target.closest('[data-mission],[data-action],[data-tool],[data-target],[data-pin],[data-wire],[data-resistor],[data-load],[data-probe],[data-shop-point],[data-shop-spare],[data-shop-action],[data-street-inspect],[data-street-replace],[data-street-isolate],[data-street-cable],[data-measure-part],[data-challenge],[data-challenge-measure]');
+    const button=e.target.closest('[data-district],[data-mission],[data-action],[data-tool],[data-target],[data-pin],[data-wire],[data-resistor],[data-load],[data-probe],[data-shop-point],[data-shop-spare],[data-shop-action],[data-street-inspect],[data-street-replace],[data-street-isolate],[data-street-cable],[data-measure-part],[data-challenge],[data-challenge-measure]');
     if(!button||button.disabled)return;
+    if(button.dataset.district){this.district=button.dataset.district;this.renderMap();this.el(`[data-district="${this.district}"]`)?.focus({preventScroll:true});return;}
     if(button.dataset.mission!==undefined){this.start(Number(button.dataset.mission));return;}
     const action=button.dataset.action;
     if(action==='map'){this.showMap();return;}
@@ -88,7 +91,7 @@ export class CityGame {
     if(action==='close-circuit'){this.closeCircuit();return;}
     if(action==='dismiss-message'){s.messageTarget=null;this.renderGame();this.el(`[data-target="${s.focus}"]`)?.focus({preventScroll:true});return;}
     if(action==='next'){this.index<adventures.length-1?this.start(this.index+1):this.showMap();return;}
-    if(action==='restart'){this.sessions.set(this.index,new AdventureSession(this.index));this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});return;}
+    if(action==='restart'){this.sessions.set(this.index,this.drafts.attach(new AdventureSession(this.index),{fresh:true}));this.renderGame();this.el('[data-stage] h1').focus({preventScroll:true});return;}
     if(s.shop&&(button.dataset.probe||button.dataset.shopPoint||button.dataset.shopSpare||button.dataset.shopAction)){
       if(button.dataset.probe)s.shop.selectedProbe=button.dataset.probe;
       if(button.dataset.shopPoint)s.shop.placeProbe(s.shop.selectedProbe,button.dataset.shopPoint);

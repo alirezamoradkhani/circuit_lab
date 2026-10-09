@@ -1,0 +1,3 @@
+export const districts=[{id:'all',name:'همهٔ مأموریت‌ها'},{id:'network',name:'شبکه و روشنایی'},{id:'services',name:'خدمات شهری'},{id:'control',name:'کنترل و ابزار دقیق'},{id:'resilience',name:'حفاظت و پشتیبانی'}];
+const groups={gate:'network',shop:'network',street:'network',feeder:'network',clinic:'services',pumps:'services',radio:'control',bridge:'control',station:'resilience',backup:'resilience',isolation:'resilience',transfer:'resilience'};
+export function missionMeta(m,index){return {district:groups[m.id],level:index<2?'آشنایی':index<5?'عملیاتی':'تخصصی',code:'OP-'+String(index+1).padStart(2,'0')};}

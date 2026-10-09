@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {mkdir} from 'node:fs/promises';
+await mkdir('.test-artifacts',{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+const click=sel=>p.locator(sel).click();const action=id=>click('[data-action="'+id+'"]');const option=(key,v)=>click('[data-challenge="'+key+'"][data-value="'+v+'"]');
+async function enter(index){await click('.city-map [data-mission="'+index+'"]');if(await p.locator('.adventure-victory').count())await action('restart');await click('[data-target="cabinet"]');}
+async function victory(){await p.locator('.adventure-victory').waitFor();}
+try{
+ await p.goto('http://localhost:4173/#city');await p.locator('.operations-grid').waitFor();assert.equal(await p.locator('.operation-card').count(),12);assert.equal(await p.locator('.operation-card:disabled').count(),0);await p.screenshot({path:'.test-artifacts/operations-desktop.png',fullPage:true});
+ await click('[data-district="control"]');assert.equal(await p.locator('.operation-card').count(),2);await click('[data-district="all"]');
+ await enter(8);await p.screenshot({path:'.test-artifacts/operations-feeder.png',fullPage:true});await option('cable',.5);assert.match(await p.locator('.urban-feedback').innerText(),/قطع کن/);await option('main',0);await option('cable',.5);await p.reload();await enter(8);assert.equal(await p.locator('[data-challenge="cable"][data-value="0.5"]').getAttribute('aria-pressed'),'true');await option('main',1);await action('test');await victory();await action('map');
+ await enter(9);await click('[data-tool="meter"]');await click('[data-measure-part="p5"]');assert.match(await p.locator('.component-meter').innerText(),/24.00 A/);await click('[data-tool="inspect"]');await option('2',0);await option('repair',2);await option('2',1);await action('test');await victory();await action('map');
+ await enter(10);await option('1',1);await action('test');assert.equal(await p.locator('.adventure-victory').count(),0);await option('source','battery');assert.match(await p.locator('.urban-feedback').innerText(),/اینترلاک/);await option('source','off');await option('2',0);await option('source','battery');await action('test');await victory();await action('map');
+ await enter(11);await action('expand-circuit');assert.equal(await p.locator('.cabinet-panel').count(),1);await option('trim',200);await click('dialog [data-tool="meter"]');await click('dialog [data-measure-part="p7"]');assert.equal(await p.locator('.component-meter output').innerText(),'0.00 V');await click('dialog [data-action="test"]');await victory();await action('map');
+ await p.reload();assert.equal(await p.locator('.operation-card.powered').count(),4,'completion persists');
+ for(const viewport of [{width:390,height:844},{width:844,height:390}]){await p.setViewportSize(viewport);await p.screenshot({path:'.test-artifacts/operations-'+viewport.width+'.png',fullPage:true});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await enter(8);await p.screenshot({path:'.test-artifacts/operations-feeder-'+viewport.width+'.png',fullPage:true});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await action('expand-circuit');assert.equal(await p.evaluate(()=>document.querySelector('dialog').scrollWidth>document.querySelector('dialog').clientWidth+1),false);await click('dialog [aria-label="بستن نمای بزرگ"]');await action('map');}
+ for(let i=0;i<8;i++){await enter(i);await action('expand-circuit');await click('dialog [aria-label="بستن نمای بزرگ"]');await action('map');}
+ await click('[data-mode="lab"]');assert.equal(await p.locator('.main-grid').isVisible(),true);await click('[data-mode="story"]');await p.locator('.story-world canvas').waitFor();await click('[data-mode="city"]');assert.equal(await p.locator('.city-home').isVisible(),true);
+ assert.deepEqual(errors,[]);console.log('PASS operations: filter, all four mouse solutions, meter, popup, saved completion, desktop/mobile/landscape without overflow.');
+}finally{await browser.close();}

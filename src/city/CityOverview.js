@@ -1,0 +1,11 @@
+import {urbanBuilding} from './UrbanArt.js';
+import {districts,missionMeta} from './CityCatalog.js';
+const fa=n=>n.toLocaleString('fa-IR');
+export function renderOperations(missions,progress,index,filter='all',sessions=new Map()){
+ const visible=missions.map((m,i)=>({m,i,meta:missionMeta(m,i)})).filter(({meta})=>filter==='all'||meta.district===filter);
+ return `<nav class="district-tabs" aria-label="دسته‌بندی مأموریت">${districts.map(d=>`<button data-district="${d.id}" aria-pressed="${filter===d.id}">${d.name}<span>${fa(missions.filter((m,i)=>d.id==='all'||missionMeta(m,i).district===d.id).length)}</span></button>`).join('')}</nav><div class="operations-grid expanded-town">${visible.map(({m,i,meta})=>{const done=progress.stars[m.id],open=progress.unlocked(i);return `<button class="operation-card city-building ${done?'powered':''} ${index===i?'current':''}" data-mission="${i}" ${open?'':'disabled'} aria-label="${m.title}؛ ${done?'تحویل‌شده':'ورود به مأموریت'}"><div class="operation-art">${urbanBuilding(m.id,!!done)}<span class="operation-code" dir="ltr">${meta.code}</span><span class="operation-status ${done?'done':''}">${done?'تأیید شده':sessions.has(i)?'در دست تعمیر':'آمادهٔ بررسی'}</span></div><div class="operation-copy"><small>${districts.find(d=>d.id===meta.district).name} · ${meta.level}</small><h2>${m.title}</h2><p>${m.skill}</p><footer><span>${done?'کیفیت تحویل '+fa(done)+' از ۳':m.budget?'بودجهٔ قطعات '+fa(m.budget):'بدون خرید قطعه'}</span><b>${done?'بازبینی':'ورود'} ←</b></footer></div></button>`;}).join('')}</div>`;
+}
+export function operationsHero(missions,progress){
+ const count=Object.keys(progress.stars).length;
+ return `<div class="operations-skyline" aria-hidden="true">${['radio','station','clinic','pumps','shop'].map(id=>urbanBuilding(id,!!progress.stars[id])).join('')}</div><div class="operations-hero-copy"><span class="eyebrow">شهر روشن / مرکز عملیات</span><h1>برقِ شهر، مسئولیت تو.</h1><p>گزارش را بخوان، علت را اندازه بگیر و تعمیرت را در شرایط واقعی مدار آزمایش کن.</p><div class="operations-stats"><span><b>${fa(missions.length)}</b> مأموریت مستقل</span><span><b>${fa(count)}</b> تحویل تأییدشده</span><span>مدارهای کم‌ولتاژ DC</span></div></div>`;
+}

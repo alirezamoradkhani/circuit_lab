@@ -113,8 +113,8 @@ function setMode(nextMode){
  document.body.classList.toggle('city-theme',mode==='city');
  document.body.classList.toggle('story-theme',mode==='story');
  document.querySelector('.brand strong').textContent=mode==='story'?'مدار گمشده':mode==='city'?'شهر روشن':'آزمایشگاه مدار';
- document.querySelector('.brand small').textContent=mode==='story'?'THE LOST CIRCUIT':mode==='city'?'RESTORE THE LIGHT':'CIRCUIT LAB';
- document.querySelector('meta[name="theme-color"]').content=mode==='story'?'#303830':mode==='city'?'#edf7f3':'#101827';
+ document.querySelector('.brand small').textContent=mode==='story'?'THE LOST CIRCUIT':mode==='city'?'CITY OPERATIONS':'CIRCUIT LAB';
+ document.querySelector('meta[name="theme-color"]').content=mode==='story'?'#303830':mode==='city'?'#1b3443':'#101827';
  document.querySelector('.main-grid').hidden=mode!=='lab';
  $('cityMode').hidden=mode!=='city';
  $('storyMode').hidden=mode!=='story';
@@ -123,7 +123,7 @@ function setMode(nextMode){
  city.setActive(mode==='city');
  boardZoom.hidden=!builder.active;
  $('progressLabel').hidden=mode!=='lab';
- document.querySelector('footer').hidden=mode!=='lab';
+ document.querySelector('.app-shell > footer').hidden=mode!=='lab';
  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
 }
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
