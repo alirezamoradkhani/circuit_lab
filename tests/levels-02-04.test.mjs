@@ -8,7 +8,7 @@ function game(factory){const d=factory(),w=new ComponentWorld(d.components.map(c
 test('wind: low speed cannot create a bridge; overload recovers and high speed locks it',()=>{const g=game(wind),{w,d,ctx}=g;assert.equal(d.ready(w,ctx),false);w.get('supply').resetBreaker();g.step(.1);assert.equal(w.get('supply').state.tripped,true);w.get('sign').act('toggle',false);w.get('fan').act('speed',0);w.get('supply').resetBreaker();g.step(5);assert.equal(w.get('crate').state.progress,0);w.get('fan').act('speed',1);g.step(4);assert.equal(w.get('crate').state.locked,true);w.disconnect('fan');g.step(1);assert.equal(d.ready(w,ctx),true);assert.equal(w.get('crate').state.progress,1);});
 test('wind: battery route consumes exactly 48 J and empty battery can recharge',()=>{const g=game(wind),{w}=g;w.get('ray').state.position={x:-3,y:0,z:-1};w.connect('battery','fan');g.step(4);assert.equal(w.get('crate').state.locked,true);assert.ok(Math.abs(w.get('battery').state.energy-24)<1e-6);w.disconnect('fan');w.get('battery').state.energy=0;w.get('battery').state.charging=true;w.get('sign').act('toggle',false);w.get('supply').resetBreaker();g.step(6);assert.equal(w.get('battery').state.energy,72);});
 test('wind: alternate ride requires mains, speed and direction; crosses via scripted path',()=>{const g=game(wind),{w,d,ctx}=g;assert.match(g.act('launch','wind-ride'),/پنکه/);w.get('sign').act('toggle',false);w.get('supply').resetBreaker();w.get('fan').act('direction',1);g.step(.1);g.act('launch','wind-ride');g.step(2.1);assert.equal(ctx.flags.windCrossed,true);assert.equal(w.get('ray').state.position.x,2.4);assert.equal(d.ready(w,ctx),true);});
-test('market: key cannot be taken on patrol; confetti wind creates genuine distraction',()=>{const g=game(market),{w,d,ctx}=g;assert.match(g.act('key','take-key'),/نگهبان/);assert.equal(ctx.flags.key,undefined);w.connect('supply','sign');w.connect('supply','fan');w.get('fan').act('direction',0);g.step(7);assert.equal(w.get('guard').state.mode,'cleaning');g.act('key','take-key');assert.equal(ctx.flags.key,true);assert.equal(ctx.flags.mainReceipt,true);assert.equal(d.ready(w,ctx),false);w.connect('supply','latch');g.step(1);assert.equal(d.ready(w,ctx),true);});
+test('market: key cannot be taken on patrol; confetti wind creates genuine distraction',()=>{const g=game(market),{w,d,ctx}=g;assert.match(g.act('key','take-key'),/نگهبان/);assert.equal(ctx.flags.key,undefined);w.connect('supply','sign');w.connect('supply','fan');w.get('fan').act('direction',0);g.step(7);assert.equal(w.get('guard').state.mode,'cleaning');g.act('key','take-key');assert.equal(ctx.flags.key,true);assert.equal(ctx.flags.mainReceipt,true);assert.equal(d.ready(w,ctx),false);w.disconnect('fan');w.disconnect('sign');w.connect('supply','latch');g.step(1);assert.equal(d.ready(w,ctx),true);});
 test('market: charger distracts without confetti and repeatable cycles recover missed opportunity',()=>{const g=game(market),{w,ctx}=g;w.connect('supply','dock');g.step(6);assert.equal(w.get('guard').state.mode,'charging');g.act('key','take-key');assert.equal(ctx.flags.key,true);w.get('guard').state.cooldown=3;g.act('dock','dock-recall');assert.equal(w.get('guard').state.cooldown,0);});
 test('lift: startup overload, physical cargo, isolated upper lock and permanent return route',()=>{const g=game(elevator),{w,d,ctx}=g;w.get('ray').state.position={x:0,y:0,z:2};g.act('lift','load-cargo');assert.equal(w.get('battery').state.holder,'lift');g.act('lift','lift-up');g.step(.1);assert.equal(w.get('supply').state.tripped,true);assert.equal(w.get('lift').state.progress,0);g.act('console','lamp-isolate');g.act('console','reset-main');g.step(3.2);assert.equal(w.get('lift').state.progress,1);assert.equal(ctx.flags.floor,1);assert.ok(w.get('battery').state.position.y>=3);g.act('lift','unload-cargo');g.act('latch','battery-latch');g.step(1.1);assert.equal(w.get('latch').state.complete,true);assert.equal(d.ready(w,ctx),false);g.act('ladder','open-ladder');assert.equal(d.ready(w,ctx),true);g.act('ladder','use-ladder');assert.equal(ctx.flags.floor,0);g.act('ladder','use-ladder');assert.equal(ctx.flags.floor,1);});
 test('lift: battery cannot start motor; mains cable route works without charged battery',()=>{const g=game(elevator),{w,ctx,d}=g;w.get('ray').state.position={x:0,y:0,z:2};w.connect('battery','lift');g.act('lift','lift-up');g.step(.1);assert.equal(w.get('lift').state.progress,0);assert.equal(w.get('battery').state.tripped,true);w.disconnect('lift');w.connect('supply','lift');w.get('lamp').act('toggle',false);w.get('battery').state.energy=0;g.act('reel','take-reel');g.step(3.2);assert.equal(ctx.flags.floor,1);assert.match(g.act('latch','service-latch'),/ایزوله/);g.act('upper-console','motor-isolate');g.act('latch','service-latch');g.step(1.1);assert.equal(w.get('latch').state.complete,true);assert.match(g.act('lift','lift-down'),/کابل سرویس/);g.act('ladder','open-ladder');assert.equal(d.ready(w,ctx),true);});
@@ -41,7 +41,7 @@ test('session wind: battery tether, saved partial bridge, inventory slot and rea
 });
 test('session market: real pathfinding moves guard and both routes permit reaching key and latch',()=>{
  for(const mode of ['paper','dock']){const s=session(market);if(mode==='paper'){s.world.connect('supply','sign');s.world.connect('supply','fan');s.world.get('fan').act('direction',0);}else s.world.connect('supply','dock');advance(s,7);
- command(s,'key','take-key');assert.equal(s.flags.key,true);approach(s,'latch');s.world.connect('supply','latch');advance(s,1.1);
+ command(s,'key','take-key');assert.equal(s.flags.key,true);approach(s,'latch');for(const id of ['fan','sign','dock'])s.world.disconnect(id);s.world.connect('supply','latch');advance(s,1.1);
  const restored=session(market);restored.restore(s.snapshot());assert.equal(restored.flags.key,true);assert.equal(restored.definition.ready(restored.world,restored.ctx),true);
  assert.ok(restored.navigation.findPath(restored.ray.state.position,restored.definition.exit,{}).length);
  }
@@ -85,7 +85,7 @@ test('market: key interaction explains blocked states and takes it only after gu
  const interact=()=>d.interact(w,'key',s.ctx);
  assert.match(interact(),/گشت/);assert.equal(s.flags.key,undefined);
  w.get('guard').state.mode='cleaning';w.get('guard').state.position={...w.get('key').state.position};
- assert.match(interact(),/فن/);assert.equal(d.focus(w,s.ctx),null);
+ assert.match(interact(),/کنار کلید/);assert.equal(d.focus(w,s.ctx),null);
  w.get('papers').state.position={x:-4,y:0,z:1};
  assert.match(interact(),/صبر/);assert.equal(s.flags.key,undefined);
  w.get('guard').state.position={x:-4,y:0,z:1};
@@ -93,4 +93,15 @@ test('market: key interaction explains blocked states and takes it only after gu
  assert.match(interact(),/کلید برداشته شد/);assert.equal(w.get('key').state.collected,true);assert.equal(s.flags.mainReceipt,true);
  assert.equal(d.focus(w,s.ctx),null);assert.match(interact(),/کیف/);
  const restored=session(market);restored.restore(s.snapshot());assert.equal(restored.world.get('key').state.visible,false);assert.equal(restored.flags.key,true);
+});
+
+
+test('market: powering every route overloads; reallocation or a second source is required',()=>{
+ const g=game(market),{w,ctx,d}=g;
+ for(const id of ['sign','fan','dock'])w.connect('supply',id);
+ g.step(.1);assert.equal(w.get('supply').state.tripped,true);assert.equal(ctx.flags.key,undefined);
+ w.disconnect('dock');w.get('supply').resetBreaker();w.get('fan').act('direction',0);g.step(7);
+ g.act('key','take-key');assert.equal(ctx.flags.key,true);
+ w.connect('supply','latch');g.step(1.2);assert.equal(d.ready(w,ctx),false,'all-on must not open the exit');
+ w.disconnect('sign');w.disconnect('fan');w.get('supply').resetBreaker();g.step(1.2);assert.equal(d.ready(w,ctx),true);
 });

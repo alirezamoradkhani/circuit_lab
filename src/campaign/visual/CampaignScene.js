@@ -1,3 +1,4 @@
+import {SceneFeedback} from './SceneFeedback.js';
 import * as T from '../engine/three.js';
 import {makeMaterials} from './materials.js';
 import {pipe,ring} from './shapes.js';
@@ -11,7 +12,7 @@ export class CampaignScene {
   this.camera=new T.OrthographicCamera(-10,10,7,-7,.1,100);this.offset=new T.Vector3(8,13,19);this.target=new T.Vector3(0,.6,0);
   this.raycaster=new T.Raycaster();this.plane=new T.Plane(new T.Vector3(0,1,0),0);this.materials=makeMaterials();
   this.environment=campaignEnvironment(this.scene,this.materials,session.definition);
-  this.entities=new ComponentScene(this.scene,this.materials,session.world,audio);
+  this.entities=new ComponentScene(this.scene,this.materials,session.world,audio);this.feedback=new SceneFeedback(this.scene,session);
   this.scene.add(new T.HemisphereLight('#ffe6b9','#495c51',2.7));const sun=new T.DirectionalLight('#ffdfa2',3);sun.position.set(-5,9,5);this.scene.add(sun);
   this.marker=ring(this.scene,this.materials.brass,0,.06,0,.3,.022);this.marker.rotation.x=-Math.PI/2;this.marker.visible=false;
   this.wires=new T.Group();this.scene.add(this.wires);this.wireKey='';this.overview=false;

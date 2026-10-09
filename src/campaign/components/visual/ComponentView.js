@@ -34,6 +34,7 @@ export class ComponentView {
   for(const led of this.indicators){led.material.emissiveIntensity=on?1.5:0;led.material.color.set(on?'#edd7a0':'#4d5546');}
   if(parts.rotor&&s.powered){if(type==='Conveyor')parts.rotor.children.forEach(o=>o.rotation.y+=dt*5);else parts.rotor.rotation.z-=dt*(type==='Fan'?this.entity.strength*12:6);}
   if(parts.head)parts.head.rotation.y=type==='Mirror'?-s.angle:type==='BeamLamp'?Math.PI/2-s.direction:type==='Fan'?this.entity.directions[s.direction]:type==='Antenna'?s.direction*Math.PI/2:s.direction??0;
+  if(type==='Fan'&&parts.head&&this.entity.config.windTargets){const aim=this.entity.config.windTargets[s.direction];parts.head.rotation.y=Math.atan2(aim.x-p.x,aim.z-p.z);}
   if(parts.panel){if(type==='PressurePlate')parts.panel.position.y=s.pressed?.08:.15;else if(type==='Bridge')parts.panel.rotation.x=-(s.amount??0)*Math.PI/2;else if(type==='Canopy')parts.panel.rotation.x=-Math.PI/2+(s.amount??0)*1.3;else parts.panel.scale.y=Math.max(.02,1-(s.amount??0));}
   if(parts.lever)parts.lever.rotation.x=s.tripped?-.8:s.closed===false?.7:0;
   if(parts.water)parts.water.position.y=.1+(s.level??0)*.3;
