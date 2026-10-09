@@ -11,7 +11,8 @@
     "test:components": "node tests/components.test.mjs && node tests/component-engine.test.mjs",
     "test:components:browser": "node tests/components.browser.mjs",
     "test:campaign": "node --test tests/levels-02-04.test.mjs tests/levels-05-08.test.mjs tests/levels-09-12.test.mjs tests/campaign-runtime.test.mjs",
-    "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs"
+    "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs && node tests/market.browser.mjs",
+    "test:market:browser": "node tests/market.browser.mjs"
   },
   "type": "module",
   "dependencies": {

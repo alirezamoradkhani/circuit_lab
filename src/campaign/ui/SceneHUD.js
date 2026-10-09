@@ -26,7 +26,7 @@ export class SceneHUD {
     this.nodes={};
     for(const [id,label] of Object.entries(this.config.names)){
       const b=document.createElement('button');b.type='button';b.dataset.storyObject=id;b.setAttribute('aria-label',label);
-      b.innerHTML=icon(id==='battery'?'battery':id==='cart'?'cart':id==='receipt'?'receipt':id==='reel'?'cable':id==='exit'?'arrow':'socket')+'<span>'+label+'</span>';
+      b.innerHTML=icon(id==='battery'?'battery':id==='cart'?'cart':id==='receipt'?'receipt':id==='reel'?'cable':id==='exit'?'arrow':id==='key'?'key':'socket')+'<span>'+label+'</span>';
       root.querySelector('.story-hotspots').append(b);this.nodes[id]=b;
     }
     this.onRootClick=e=>{const b=e.target.closest('[data-story-action]');if(b)onAction(b.dataset.storyAction);};root.addEventListener('click',this.onRootClick);

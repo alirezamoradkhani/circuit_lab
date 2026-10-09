@@ -34,7 +34,7 @@ export class CampaignHUD extends SceneHUD {
   super(root,onAction,{
    names,pins:session.world.all().filter(e=>e instanceof Device||e instanceof Source||e instanceof SourceSelector||e.kind==='Resistor').map(e=>e.id),
    labels:{chapter:'مدار گمشده / مرحلهٔ '+fa(session.definition.number),title:session.definition.title,introChapter:'ایستگاه '+fa(session.definition.number),introTitle:session.definition.title,introText:session.definition.intro},
-   available:(id)=>{const e=session.world.get(id);return e.state.visible&&!e.state.collected;},goal:()=>session.definition.ready(session.world,session.ctx)?'exit':null,objective:()=>session.objective(),
+   available:(id)=>{const e=session.world.get(id);return e.state.visible&&!e.state.collected;},goal:()=>session.definition.ready(session.world,session.ctx)?'exit':session.definition.focus?.(session.world,session.ctx)??null,objective:()=>session.objective(),
    canUnplug:(s,id)=>session.world.connections.has(id)||[...session.world.connections.values()].some(c=>c.source===id),
    interactionLabel:(s,id)=>names[id]??'بررسی وسیله',
    visible:(id,s,{tool,selected,nearest,goal,pin})=>tool==='hand'?id===selected||id===nearest||id===goal:pin,
@@ -51,7 +51,7 @@ export class CampaignHUD extends SceneHUD {
   const e=this.session.world.get(selected),near=e&&Math.hypot(e.state.position.x-s.player.x,e.state.position.z-s.player.z)<1.7;
   this.panel.hidden=tool!=='hand'||!e||e.state.collected||!s.started||s.completed;
   if(!this.panel.hidden){
-   const commands=near?this.session.commands(selected):[],status=near?equipmentStatus(e,this.session.world):'رِی دارد نزدیک می‌شود…';
+   const commands=near?this.session.commands(selected):[],status=near?[equipmentStatus(e,this.session.world),this.session.definition.status?.(this.session.world,selected,this.session.ctx)].filter(Boolean).join(' · '):'رِی دارد نزدیک می‌شود…';
    this.panel.querySelector('b').textContent=e.config.label??e.id;this.panel.querySelector('p').textContent=status;
    const html=commands.map(c=>'<button data-story-action="op:'+escapeHTML(c.id)+'">'+escapeHTML(c.label)+'</button>').join('');
    if(html!==this.panelContent){this.panelContent=html;this.panel.querySelector('div').innerHTML=html;}

@@ -78,3 +78,19 @@ test('elevator geometry: upper landing is physically rendered at y=3 with a shaf
  const hits=new T.Raycaster(new T.Vector3(4,6,-2),new T.Vector3(0,-1,0)).intersectObjects(env.root.children,true);assert.equal(hits[0].object.name,'upper-floor');assert.ok(Math.abs(hits[0].point.y-3)<1e-6);
  const shaft=new T.Raycaster(new T.Vector3(0,3.5,-2),new T.Vector3(0,-1,0)).intersectObjects(env.root.children,true);assert.notEqual(shaft[0]?.object.name,'upper-floor');
 });
+
+
+test('market: key interaction explains blocked states and takes it only after guard moves away',()=>{
+ const s=session(market),w=s.world,d=s.definition;
+ const interact=()=>d.interact(w,'key',s.ctx);
+ assert.match(interact(),/گشت/);assert.equal(s.flags.key,undefined);
+ w.get('guard').state.mode='cleaning';w.get('guard').state.position={...w.get('key').state.position};
+ assert.match(interact(),/فن/);assert.equal(d.focus(w,s.ctx),null);
+ w.get('papers').state.position={x:-4,y:0,z:1};
+ assert.match(interact(),/صبر/);assert.equal(s.flags.key,undefined);
+ w.get('guard').state.position={x:-4,y:0,z:1};
+ assert.equal(d.focus(w,s.ctx),'key');assert.equal(d.hint(w,s.ctx).key,'take-key');
+ assert.match(interact(),/کلید برداشته شد/);assert.equal(w.get('key').state.collected,true);assert.equal(s.flags.mainReceipt,true);
+ assert.equal(d.focus(w,s.ctx),null);assert.match(interact(),/کیف/);
+ const restored=session(market);restored.restore(s.snapshot());assert.equal(restored.world.get('key').state.visible,false);assert.equal(restored.flags.key,true);
+});

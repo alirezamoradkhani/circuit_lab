@@ -1,5 +1,20 @@
 import {p,spec,action,clue,baseComponents,setupBase,collectible} from './chapter1/shared.js';
 const start=p(-4,2.5),exit=p(5,-2.7);
+export function keyStatus(w,ctx){
+ if(ctx.flags.key)return {ready:false,text:'کلید در کیف رِی است.'};
+ const guard=w.get('guard'),key=w.get('key');
+ if(!['cleaning','charging'].includes(guard.state.mode))return {ready:false,text:'نگهبان در حال گشت است؛ تابلو و فن را به سمت ورودی راه بینداز، یا جایگاه شارژ نگهبان را روشن کن.'};
+ if(Math.hypot(guard.state.position.x-key.state.position.x,guard.state.position.z-key.state.position.z)<2.4){
+  if(guard.state.mode==='cleaning'&&w.get('papers').state.position.x>-2)return {ready:false,text:'نگهبان کاغذها را همین کنار کلید تمیز می‌کند؛ فن را روشن و جهتش را به سمت ورودی تنظیم کن.'};
+  return {ready:false,text:'نگهبان حواسش پرت شده ولی هنوز نزدیک کلید است؛ صبر کن کمی دورتر برود.'};
+ }
+ return {ready:true,text:'راه کلید آزاد است؛ با ابزار دست روی نشان کلید بزن تا رِی نزدیک شود و آن را بردارد.'};
+}
+function takeKey(w,ctx){
+ const status=keyStatus(w,ctx);if(!status.ready)return status.text;
+ collectible(w,'key','key',ctx,'');w.get('main-receipt').collect();ctx.flags.mainReceipt=true;
+ return 'کلید برداشته شد و در کیف قرار گرفت. فروشنده رسید «شارژر سازگار» پاک‌رو را هم به تو داد.';
+}
 export default function createDefinition(){return {
  id:'03-market',number:3,title:'بازارِ جاروها',theme:'market',intro:'نگهبان نظافتچی راه پیشخوان را می‌بندد. با کاغذها یا جایگاه شارژ برایش کاری پیدا کن؛ کلید بارانداز پشت پیشخوان است.',start,exit,bounds:{minX:-6,maxX:6,minZ:-4,maxZ:4},
  components:[...baseComponents(start,exit),
@@ -25,8 +40,8 @@ export default function createDefinition(){return {
   if(guard.state.mode==='charging'&&!ctx.flags.chargingSeen){ctx.flags.chargingSeen=true;ctx.say('نگهبان به جایگاه شارژ می‌رود؛ حالا پشت پیشخوان را بررسی کن.');}
  },
  actions(w,id,ctx){
-  if(id==='key')return [action('take-key','برداشتن کلید بارانداز',()=>{const g=w.get('guard'),key=w.get('key');if(g.state.mode==='patrol'||Math.hypot(g.state.position.x-key.state.position.x,g.state.position.z-key.state.position.z)<2.4)return 'نگهبان هنوز جلوی پیشخوان است؛ کاغذها را دور کن یا او را به شارژ بفرست.';collectible(w,'key','key',ctx,'');w.get('main-receipt').collect();ctx.flags.mainReceipt=true;return 'کلید برداشته شد. فروشنده رسید «شارژر سازگار» پاک‌رو را هم به تو داد.';})];
-  if(id==='fan')return [action('fan-direction',w.get('fan').state.direction?'باد به سمت فضای خالی ورودی':'باد به سمت پیشخوان',()=>{w.get('fan').act('direction');return w.get('fan').state.direction?'این جهت کاغذها را از مسیر نگهبان دور نمی‌کند.':'کاغذها به فضای خالی کنار ورودی می‌روند.';}),action('fan-toggle',w.get('fan').state.enabled?'خاموش':'روشن',()=>{w.get('fan').act('toggle');}),action('fan-disconnect','جدا کردن کابل',()=>w.disconnect('fan'))];
+  if(id==='key')return [action('take-key','برداشتن کلید بارانداز',()=>takeKey(w,ctx))];
+  if(id==='fan')return [action('fan-direction',w.get('fan').state.direction?'تغییر جهت: به سمت ورودی':'تغییر جهت: به سمت پیشخوان',()=>{w.get('fan').act('direction');return w.get('fan').state.direction?'این جهت کاغذها را از مسیر نگهبان دور نمی‌کند.':'کاغذها به فضای خالی کنار ورودی می‌روند.';}),action('fan-toggle',w.get('fan').state.enabled?'خاموش':'روشن',()=>{w.get('fan').act('toggle');}),action('fan-disconnect','جدا کردن کابل',()=>w.disconnect('fan'))];
   if(id==='sign')return [action('sign-toggle',w.get('sign').state.enabled?'پایان جشن':'شروع جشن',()=>{w.get('sign').act('toggle');}),action('sign-party','جشن دوباره و کاغذ تازه',()=>{if(!w.get('sign').state.powered)return 'اول برق تابلو را وصل و آن را روشن کن.';const papers=w.get('papers');papers.state.locked=false;papers.state.collected=false;papers.state.visible=true;papers.state.progress=0;papers.state.position={...papers.initial.position};return 'یک مشت کاغذ تازه از تابلو بیرون پرید!';}),action('sign-disconnect','جدا کردن کابل',()=>w.disconnect('sign'))];
   if(id==='dock')return [action('dock-toggle',w.get('dock').state.enabled?'خاموش کردن جایگاه':'روشن کردن جایگاه',()=>{w.get('dock').act('toggle');}),action('dock-recall','چرخهٔ شارژ دوباره',()=>{if(!w.get('dock').state.powered)return 'برق جایگاه شارژ را وصل کن.';w.get('guard').state.cooldown=0;return 'جایگاه دوباره نگهبان را صدا می‌زند؛ تابلو را خاموش کن تا کاغذ تازه نریزد.';})];
   if(id==='receipt-a'||id==='receipt-b')return [action('read-receipt','خواندن و برداشتن رسید',()=>collectible(w,id,id,ctx,id==='receipt-a'?'رسید: «یک پتوی کوچک برای مسافر خسته.»':'رسید: «شارژر قبلی به ربات کوچک نمی‌خورد.»'))];
@@ -34,12 +49,20 @@ export default function createDefinition(){return {
   if(['guard','papers','counter','main-receipt','door'].includes(id))return [];
   return null;
  },
+ interact(w,id,ctx){if(id==='key')return takeKey(w,ctx);},
+ focus(w,ctx){return keyStatus(w,ctx).ready?'key':null;},
+ status(w,id,ctx){
+  if(id==='key')return keyStatus(w,ctx).text;
+  if(id==='fan')return 'جهت فعلی باد: '+(w.get('fan').state.direction?'پیشخوان؛ کاغذها از کلید دور نمی‌شوند.':'ورودی؛ کاغذها از کلید دور می‌شوند.');
+ },
  ready(w,ctx){return !!(ctx.flags.key&&w.get('latch').state.complete);},
- objective(w,ctx){return !ctx.flags.key?'نگهبان را از پیشخوان دور کن و کلید بارانداز را بردار.':!w.get('latch').state.complete?'کلید همراهت است؛ ضامن در خدمات را برق بده.':'از در خدمات وارد بارانداز شو.';},
+ objective(w,ctx){if(keyStatus(w,ctx).ready)return 'نگهبان دور شده؛ با ابزار دست روی نشان کلید بزن.';return !ctx.flags.key?'نگهبان را از پیشخوان دور کن و کلید بارانداز را بردار.':!w.get('latch').state.complete?'کلید همراهت است؛ ضامن در خدمات را برق بده.':'از در خدمات وارد بارانداز شو.';},
  hint(w,ctx){
   if(ctx.flags.key)return clue('door','کلید امن است','نگهبان کلید را پس نمی‌گیرد.','در خدمات یک پالس برق جدا می‌خواهد.',['منبع یا باتری را به ضامن در خدمات وصل کن.','یک ثانیه صبر کن و از خروج بگذر.']);
+  const status=keyStatus(w,ctx);
+  if(status.ready)return clue('take-key','حالا کلید را بردار','نگهبان از پیشخوان دور شده است.',status.text,['ابزار دست را انتخاب کن.','روی نشان کلید بزن؛ رِی نزدیک می‌شود و کلید را برمی‌دارد.']);
   const guard=w.get('guard');
-  if(guard.state.mode!=='patrol')return clue('guard-away','حواس نگهبان پرت شده','او به کاغذ یا شارژر توجه می‌کند.','صبر کن از پیشخوان دور شود و کلید را بردار.',['از سمت پوشیدهٔ پیشخوان نزدیک کلید شو.','وقتی نگهبان دور شد کلید را بردار.','اگر فرصت تمام شد جشن یا چرخهٔ شارژ را تکرار کن.']);
+  if(['cleaning','charging'].includes(guard.state.mode))return clue('guard-away','حواس نگهبان پرت شده','او به کاغذ یا شارژر توجه می‌کند.',status.text,['از سمت پوشیدهٔ پیشخوان نزدیک کلید شو.','وقتی نگهبان دور شد کلید را بردار.','اگر فرصت تمام شد جشن یا چرخهٔ شارژ را تکرار کن.']);
   return clue('distraction','برای نگهبان کار بساز','نگهبان آشغال و شارژ را به نگهبانی ترجیح می‌دهد.','کاغذها باید کنار ورودی جمع شوند، دور از کلید.',['تابلو و فن را به منبع وصل کن.','جهت فن را به فضای خالی ورودی تنظیم کن.','راه دیگر: تابلو را خاموش و جایگاه شارژ را روشن کن.']);
  },
  obstacles(w,ctx){return [{x:2.8,z:-1,w:1.4,d:.65},...(!ctx.flags.key||!w.get('latch').state.complete?[{x:4,z:-2.7,w:.4,d:2.6}]:[])];}

@@ -1,4 +1,5 @@
 const paths={
+ key:'M14 10a5 5 0 11-10 0 5 5 0 0110 0zm0 0h8m-2 0v4m-4-4v3',
  hand:'M9 12V5a2 2 0 014 0v6m0-4a2 2 0 014 0v5m0-3a2 2 0 014 0v6c0 4-3 7-7 7h-1c-2 0-4-1-5-3l-4-6a2 2 0 013-2l2 2',
  cable:'M7 3v5m4-5v5M5 8h8v3a4 4 0 01-8 0V8zm4 7v2a4 4 0 008 0v-3m-2 0h4',
  meter:'M6 3h12v18H6zM9 6h6v5H9zm1 10h4m-2-2v4',
