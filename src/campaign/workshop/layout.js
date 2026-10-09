@@ -1,3 +1,4 @@
+import {presets} from '../components/presets.js';
 export const ROOM = {minX:-6.15,maxX:6.15,minZ:-4.4,maxZ:4.05};
 export const START = {x:1.3,z:2.8};
 export const PORTS = {
@@ -7,7 +8,7 @@ export const PORTS = {
   radio:{x:5.25,y:1.35,z:1.35},
 };
 export const NAMES = {battery:'باتری رِی',mains:'پریز تعمیرگاه',latch:'ضامن کرکره',lamp:'چراغ میز',radio:'رادیوی قدیمی',cart:'چرخ‌دستی',reel:'قرقرهٔ کابل',receipt:'رسید پاک‌رو',exit:'درِ خروج'};
-export const LOADS = {lamp:3,radio:3,latch:6};
+export const LOADS = {lamp:presets.lamp.watts,radio:presets.radio.watts,latch:presets.latch.watts};
 export const STATIC_OBSTACLES = [
   {x:5.7,z:3.15,w:0.6,d:0.6},
   {x:-4.75,z:-4.12,w:3.15,d:0.75},

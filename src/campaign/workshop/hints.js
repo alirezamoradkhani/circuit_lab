@@ -1,3 +1,4 @@
+import {ProgressiveHints} from '../engine/ProgressiveHints.js';
 import {powered,totalBatteryLoad} from './electricity.js';
 import {NAMES} from './layout.js';
 
@@ -92,13 +93,4 @@ export function workshopHint(s){
     ['ابزار دست را انتخاب کن و روی «درِ خروج» بزن؛ بگذار رِی تا بیرون کرکره راه برود.']);
 }
 
-export class HintProgress {
-  reset(){this.key=null;this.index=0;}
-  constructor(){this.reset();}
-  next(s){
-    const advice=workshopHint(s);
-    if(this.key!==advice.key){this.key=advice.key;this.index=0;}
-    const messages=[advice.clue,...advice.steps];
-    return messages[Math.min(this.index++,messages.length-1)];
-  }
-}
+export class HintProgress extends ProgressiveHints {constructor(){super(workshopHint);}}

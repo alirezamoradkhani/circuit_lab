@@ -1,15 +1,14 @@
-import {findPath,movePlayer} from './navigation.js';
-import {distance} from '../workshop/layout.js';
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class Movement {
-  constructor(game){this.game=game;this.keys=new Set();this.joy={x:0,y:0};this.path=[];this.moving=false;}
+  constructor(game,navigation){this.game=game;this.navigation=navigation;this.keys=new Set();this.joy={x:0,y:0};this.path=[];this.moving=false;}
   clear(){this.keys.clear();this.joy={x:0,y:0};this.path=[];this.arrive=null;this.moving=false;}
   go(point,arrive){
     const s=this.game.state;
     if(distance(s.player,point)<.3){arrive?.();return;}
-    this.path=findPath(s.player,point,s);this.arrive=arrive;this.stuck=0;
+    this.path=this.navigation.findPath(s.player,point,s);this.arrive=arrive;this.stuck=0;
     if(!this.path.length){
       this.arrive=null;
-      this.game.hud.message(Object.values(s.connections).includes('battery')||s.charging?'کابل رِی کشیده می‌شود؛ اول آن را جدا کن.':'این راه بسته است؛ چرخ‌دستی را عقب بکش.','error');
+      this.game.hud.message(this.navigation.blockedMessage?.(s)||'این مسیر در دسترس نیست. مانع‌ها و کابل را بررسی کن.','error');
     }
   }
   update(dt){
@@ -26,7 +25,7 @@ export class Movement {
       if(d<.075){this.path.shift();if(!this.path.length){const fn=this.arrive;this.arrive=null;fn?.();}return;}
       amount=Math.min(amount,d);dx=(next.x-s.player.x)/d*amount;dz=(next.z-s.player.z)/d*amount;
     }
-    this.moving=movePlayer(s,dx,dz);
+    this.moving=this.navigation.movePlayer(s,dx,dz);
     if((dx||dz)&&!this.moving){
       this.stuck=(this.stuck||0)+dt;
       if(this.stuck>.4){this.path=[];this.arrive=null;this.game.hud.message('راه یا کابل جلوی حرکت را گرفته. کابل متصل را بررسی کن.','error',2);this.stuck=0;}

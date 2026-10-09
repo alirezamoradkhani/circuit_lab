@@ -1,3 +1,5 @@
+import {workshopNavigation} from './engine/navigation.js';
+import {FrameGame} from './engine/FrameGame.js';
 import {WorkshopScene} from './visual/WorkshopScene.js';
 import {WorkshopHUD} from './ui/WorkshopHUD.js';
 import {WorkshopAudio} from './engine/WorkshopAudio.js';
@@ -5,18 +7,17 @@ import {Movement} from './engine/Movement.js';
 import {bindWorkshopInput} from './engine/input.js';
 import {InteractionController} from './workshop/InteractionController.js';
 import {freshState,restoreState,snapshot,resetObjects,SAVE_KEY,tick,powered} from './workshop/state.js';
-export class WorkshopGame {
+export class WorkshopGame extends FrameGame {
   constructor(root){
-    this.root=root;this.abort=new AbortController();this.active=false;this.saved=true;this.time=0;this.saveTime=0;
+    super(root);this.saved=true;this.time=0;this.saveTime=0;
     try{this.storage=window.localStorage;this.state=restoreState(JSON.parse(this.storage.getItem(SAVE_KEY)));}
     catch{this.state=freshState();this.saved=false;}
     this.intro=this.state.started?9:0;this.save();
     this.hud=new WorkshopHUD(root,action=>this.action(action));
     this.scene=new WorkshopScene(this.hud.world);
-    this.audio=new WorkshopAudio();this.movement=new Movement(this);
+    this.audio=new WorkshopAudio();this.movement=new Movement(this,workshopNavigation);
     this.interactions=new InteractionController(this);this.interactions.setTool('hand');
     bindWorkshopInput(this);
-    this.frame=this.frame.bind(this);
     if(this.state.completed)this.hud.showDialog('complete',this.state,this.saved);
   }
   save(){
@@ -24,8 +25,8 @@ export class WorkshopGame {
     catch{this.saved=false;}
   }
   setActive(active){
-    this.active=active;cancelAnimationFrame(this.raf);this.movement.clear();
-    if(active){if(this.state.completed&&!this.hud.dialog.open)this.hud.showDialog('complete',this.state,this.saved);this.last=performance.now();this.scene.resize();this.raf=requestAnimationFrame(this.frame);}
+    this.stopFrames();this.movement.clear();
+    if(active){if(this.state.completed&&!this.hud.dialog.open)this.hud.showDialog('complete',this.state,this.saved);this.scene.resize();this.startFrames();}
     else{this.save();this.audio.suspend();if(this.hud.dialog.open)this.hud.closeDialog();}
   }
   action(action){
@@ -75,26 +76,21 @@ export class WorkshopGame {
       this.save();
     }
   }
-  frame(now){
-    if(!this.active)return;
-    const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;
-    if(!document.hidden){
-      const paused=this.hud.dialog.open||!this.state.started||this.focusPaused;
-      if(!paused){
-        this.time+=dt;
-        if(this.intro<4.6){
-          this.intro+=dt;
-          if(this.intro>=4.6)this.hud.message('نورا: باتری یدکی کجاست؟… فعلاً خودت باتری داری.', 'info',6);
-        }else{
-          this.movement.update(dt);this.events(tick(this.state,dt));
-          this.audio.music(this.time,powered(this.state,'radio'));
-        }
-        this.saveTime+=dt;if(this.saveTime>1.5){this.save();this.saveTime=0;}
+  step(dt){
+    const paused=this.hud.dialog.open||!this.state.started||this.focusPaused;
+    if(!paused){
+      this.time+=dt;
+      if(this.intro<4.6){
+        this.intro+=dt;
+        if(this.intro>=4.6)this.hud.message('نورا: باتری یدکی کجاست؟… فعلاً خودت باتری داری.', 'info',6);
+      }else{
+        this.movement.update(dt);this.events(tick(this.state,dt));
+        this.audio.music(this.time,powered(this.state,'radio'));
       }
-      this.scene.render(this.state,this.time,this.movement.moving||this.state.pushing,this.intro,this.interactions.selected,paused?0:dt);
-      this.hud.update(this.state,this.scene,this.interactions.tool,this.interactions.selected,this.interactions.nearest(),this.intro,paused?0:dt);
+      this.saveTime+=dt;if(this.saveTime>1.5){this.save();this.saveTime=0;}
     }
-    this.raf=requestAnimationFrame(this.frame);
+    this.scene.render(this.state,this.time,this.movement.moving||this.state.pushing,this.intro,this.interactions.selected,paused?0:dt);
+    this.hud.update(this.state,this.scene,this.interactions.tool,this.interactions.selected,this.interactions.nearest(),this.intro,paused?0:dt);
   }
   dispose(){this.setActive(false);this.abort.abort();this.scene.dispose();this.audio.dispose();}
 }
