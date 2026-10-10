@@ -59,3 +59,44 @@ body.city-theme{--text:#233744;--muted:#5b6d75;--line:#cbd2d2;background:#edf0ee
 #cityMode .city-schematic .meter-component:focus{outline:none}
 #cityMode .circuit-dialog .schematic-scroll{width:100%;margin:10px auto}
 #cityMode .circuit-dialog .schematic-scroll:before{display:none}
+
+/* The city mission keeps its existing shell; only the central artwork becomes the playable circuit board. */
+#cityMode .urban-circuit-visual{position:relative;min-height:420px;padding:34px 14px 14px;background:#dce8e0;border-bottom:1px solid #c3d2c9;overflow:auto;direction:rtl}
+#cityMode .urban-circuit-visual .urban-site-caption{top:8px;inset-inline:14px;color:#49656b;z-index:3}
+#cityMode .urban-circuit-visual .urban-site-caption b{background:#f5f8f2;border-color:#b7c9bd;color:#49656b}
+#cityMode .urban-circuit-panel{width:min(100%,860px);margin:0 auto;padding:12px 14px 14px;background:#edf4ed;border:1px solid #b9cbc1;border-radius:8px;box-shadow:0 5px 18px #31554b14;direction:rtl}
+#cityMode .urban-circuit-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px;color:#315762}
+#cityMode .urban-circuit-title strong{font-size:15px}
+#cityMode .urban-circuit-title small{font-size:11px;color:#6c8280}
+#cityMode .urban-circuit-visual .component-meter{margin:0 0 8px;background:#e5f0e4;border-color:#a8c2b1}
+#cityMode .urban-circuit-visual .cabinet-help{font-size:12px;line-height:1.75;color:#587174;margin:8px 0}
+#cityMode .urban-circuit-visual .circuit-diagram-scroll{overflow:auto;max-width:100%;padding:2px 0 4px}
+#cityMode .urban-circuit-visual .repair-wiring{display:block;width:100%;min-width:520px;max-width:860px;height:auto;margin:0 auto;background:#dcebe1;border:1px solid #aec5b6;border-radius:6px}
+#cityMode .urban-circuit-visual .repair-wiring text{font:13px Tahoma,sans-serif;fill:#315b57}
+#cityMode .urban-circuit-visual .repair-wiring [data-pin]{cursor:pointer}
+#cityMode .urban-circuit-visual .repair-wiring [data-pin]:hover circle,#cityMode .urban-circuit-visual .repair-wiring [data-pin]:focus circle{stroke:#a36f25;stroke-width:3}
+#cityMode .urban-circuit-visual .urban-board-extra{display:grid;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #c6d5cc;color:#56716f;font-size:12px}
+#cityMode .urban-circuit-visual .urban-board-extra>div:first-child{display:flex;align-items:center;gap:8px}
+#cityMode .urban-circuit-visual .urban-board-extra>div:first-child b{font-size:17px;color:#735d28}
+#cityMode .urban-circuit-visual .urban-board-extra .spare-parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#cityMode .urban-circuit-visual .urban-board-extra .spare-parts button{min-height:38px;padding:4px;border:1px solid #bdcec1;border-radius:6px;background:#f8fbf6;color:#496b67}
+#cityMode .urban-circuit-visual .urban-board-extra .spare-parts button[aria-pressed=true]{background:#d3e5d2;border-color:#729d83}
+#cityMode .urban-circuit-visual .urban-board-extra .spare-parts b,#cityMode .urban-circuit-visual .urban-board-extra .spare-parts small{display:block}
+#cityMode .urban-circuit-visual .urban-board-extra .cabinet-switch{width:max-content;min-height:34px;margin:0}
+#cityMode .urban-clinic-board .power-budget{margin-top:8px}
+#cityMode .urban-clinic-board .appliance-list{max-width:620px;margin:10px auto 0}
+#cityMode .urban-challenge-board .challenge-panel{max-width:none;margin:0;padding:0;border:0;background:transparent}
+#cityMode .urban-challenge-board .challenge-panel details{background:#e7f0e8;border-color:#bdcec2}
+#cityMode .urban-challenge-board .challenge-status{margin:8px 0}
+#cityMode .urban-circuit-visual .cancel-wire{margin-top:8px}
+@media(max-width:800px){#cityMode .urban-circuit-visual{min-height:340px;padding:32px 8px 8px}#cityMode .urban-circuit-panel{padding:10px 9px}#cityMode .urban-circuit-title{display:block}#cityMode .urban-circuit-title small{display:block;margin-top:3px}#cityMode .urban-circuit-visual .repair-wiring{min-width:470px}#cityMode .urban-circuit-visual .urban-board-extra .spare-parts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Read-only central schematic preview uses the same visual language as the editable schematic. */
+#cityMode .city-schematic-preview .schematic-wires{fill:none;stroke:#537970;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+#cityMode .city-schematic-preview .schematic-junctions{fill:#365e56}
+#cityMode .city-schematic-preview .schematic-body{fill:#f7faf6;stroke:#8ca69a;stroke-width:1.5}
+#cityMode .city-schematic-preview .schematic-source{fill:#f4e7bc;stroke:#ae975c}
+#cityMode .city-schematic-preview .is-open .schematic-body{fill:#e0e5e1;stroke:#92a09a;stroke-dasharray:5 3}
+#cityMode .city-schematic-preview text.schematic-name{font:16px Tahoma,sans-serif;fill:#243e3a;direction:rtl}
+#cityMode .city-schematic-preview text.schematic-value{font:600 16px Tahoma,sans-serif;fill:#3d625a}
+#cityMode .city-schematic-preview .is-open text.schematic-value{fill:#626f69}
+#cityMode .city-schematic-preview .schematic-terminal{fill:#e6eee7;stroke:#537970;stroke-width:1.5}
