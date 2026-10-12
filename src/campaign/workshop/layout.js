@@ -1,3 +1,4 @@
+import {REPAIR_INPUT,REPAIR_WALK} from './RepairCircuit.js';
 import {presets} from '../components/presets.js';
 export const ROOM = {minX:-6.15,maxX:6.15,minZ:-4.4,maxZ:4.05};
 export const START = {x:1.3,z:2.8};
@@ -23,10 +24,12 @@ export function obstacles(s){
     ...(!s.door?[{x:2.35,z:-4.45,w:2.25,d:0.7}]:[])];
 }
 export function portPosition(id,s){
+  if(id==='latch'&&s.repair)return REPAIR_INPUT;
   return id==='battery'?{...s.player,y:0.85}:PORTS[id];
 }
 export function distance(a,b){return Math.hypot(a.x-b.x,a.z-b.z);}
 export function walkPoint(id,s){
+  if(id==='latch'&&s.repair)return REPAIR_WALK;
   const points={mains:{x:-5.4,z:-2.65},reel:{x:-4.55,z:-2.55},
     latch:{x:0.7,z:-3.35},lamp:{x:3.0,z:1.75},radio:{x:4.8,z:2.25},
     receipt:{x:3.65,z:2.85},exit:{x:2.35,z:s.door?-4.3:-3.65}};

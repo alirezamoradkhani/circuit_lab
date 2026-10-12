@@ -19,10 +19,11 @@ export function restoreState(value){
   if(s.cart<0.95)s.reel=false;
   const p={x:finite(value.player?.x,START.x),z:finite(value.player?.z,START.z)};
   if(walkable(p,s))s.player=p;
+  if(value.repair)s.repair=value.repair;
   let mainsUsed=false;
   for(const id of Object.keys(LOADS)){
     const source=value.connections?.[id];
-    if(source==='battery'&&distance(s.player,PORTS[id])<=2.65)s.connections[id]=source;
+    if(source==='battery'&&distance(s.player,portPosition(id,s))<=2.65)s.connections[id]=source;
     if(source==='mains'&&s.reel&&!mainsUsed){s.connections[id]=source;mainsUsed=true;}
   }
   s.charging=value.charging===true&&s.cart>0.95&&distance(s.player,PORTS.mains)<=2.65

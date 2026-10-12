@@ -6,9 +6,11 @@ function components(s){
  const m=models.get(s);m.battery.state.energy=s.energy;m.latch.state.elapsed=s.latchTime;m.latch.state.complete=s.door;return m;
 }
 import {LOADS} from './layout.js';
-export function powered(s,id){return s.connections[id]==='mains'||(s.connections[id]==='battery'&&s.energy>1e-8);}
-export function totalBatteryLoad(s){return Object.keys(LOADS).reduce((sum,id)=>sum+(s.connections[id]==='battery'&&!(id==='latch'&&s.door)?LOADS[id]:0),0);}
+import {repairReady,tickRepair,circuitReading} from './RepairCircuit.js';
+export function powered(s,id){if(id==='latch'&&s.repair&&!repairReady(s))return false;return s.connections[id]==='mains'||(s.connections[id]==='battery'&&s.energy>1e-8);}
+export function totalBatteryLoad(s){return Object.keys(LOADS).reduce((sum,id)=>sum+(s.connections[id]==='battery'&&!(id==='latch'&&s.door&&!s.repair)?(id==='latch'&&s.repair?Math.max(0,circuitReading(s).current??0)*12:LOADS[id]):0),0);}
 export function advanceElectricity(s,dt,events){
+  if(s.repair)tickRepair(s,events);
   const {battery,latch}=components(s);
   let remaining=dt;
   while(remaining>1e-8){

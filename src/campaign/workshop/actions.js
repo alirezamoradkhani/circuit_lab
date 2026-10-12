@@ -1,4 +1,4 @@
-import {LOADS,NAMES,PORTS,distance,walkPoint} from './layout.js';
+import {LOADS,NAMES,PORTS,distance,walkPoint,portPosition} from './layout.js';
 import {powered} from './state.js';
 const result=(ok,message,sound='click')=>({ok,message,sound});
 export function interact(s,id){
@@ -34,7 +34,7 @@ export function connect(s,a,b){
   if(source==='mains'&&!s.reel)return result(false,'کابل پریز کوتاه است. قرقرهٔ پشت چرخ‌دستی را بردار.');
   if(source==='mains'&&Object.entries(s.connections).some(([id,v])=>id!==target&&v==='mains'))return result(false,'قرقره یک کابل بلند دارد؛ اتصال قبلی آن را جدا کن.');
   if(source==='battery'&&s.charging)return result(false,'اول کابل شارژ را جدا کن.');
-  if(source==='battery'&&distance(s.player,PORTS[target])>2.65)return result(false,'کابل کوتاه است؛ رِی را نزدیک '+NAMES[target]+' ببر.');
+  if(source==='battery'&&distance(s.player,portPosition(target,s))>2.65)return result(false,'کابل کوتاه است؛ رِی را نزدیک '+NAMES[target]+' ببر.');
   s.connections[target]=source;
   return result(true,source==='battery'&&s.energy<=0?'کابل وصل است ولی باتری خالی است؛ پریز پشت چرخ‌دستی شارژت می‌کند.':'اتصال برقرار شد. برای جداکردن، دوباره همین دو سوکت را انتخاب کن.','plug');
 }

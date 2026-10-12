@@ -1,6 +1,6 @@
 import {HintProgress} from './hints.js';
 import {connect,disconnect,interact,measure} from './actions.js';
-import {NAMES,available,walkPoint,distance,PORTS} from './layout.js';
+import {NAMES,available,walkPoint,distance,PORTS,portPosition} from './layout.js';
 export class InteractionController {
   constructor(game){this.game=game;this.tool='hand';this.selected=null;this.hints=new HintProgress();}
   setTool(tool){
@@ -16,7 +16,7 @@ export class InteractionController {
       if(!this.selected){this.selected=id;g.hud.message(NAMES[id]+' انتخاب شد؛ حالا سر دیگر کابل را بزن.');return;}
       const from=this.selected;this.selected=null;
       const target=from==='battery'?id:id==='battery'?from:null;
-      if(target&&PORTS[target]&&distance(s.player,PORTS[target])>2.65){
+      if(target&&PORTS[target]&&distance(s.player,portPosition(target,s))>2.65){
         g.movement.go(walkPoint(target,s),()=>this.result(connect(s,from,id)));return;
       }
       this.result(connect(s,from,id));return;
