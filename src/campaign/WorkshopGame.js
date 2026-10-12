@@ -10,19 +10,24 @@ import {InteractionController} from './workshop/InteractionController.js';
 import {freshState,restoreState,snapshot,resetObjects,SAVE_KEY,tick,powered} from './workshop/state.js';
 export class WorkshopGame extends FrameGame {
   constructor(root,options={}){
-    super(root);this.options=options;this.saveKey=options.replay?SAVE_KEY+'.replay':SAVE_KEY;this.saved=true;this.time=0;this.saveTime=0;
-    try{this.storage=window.localStorage;this.state=restoreState(JSON.parse(this.storage.getItem(this.saveKey)));}
-    catch{this.state=freshState();this.saved=false;}
-    if(options.fresh)this.state=freshState();
+    super(root);this.options=options;this.saveKey=(options.saveKey??SAVE_KEY)+(options.replay?'.replay':'');this.saved=true;this.time=0;this.saveTime=0;
+    try{this.storage=window.localStorage;this.state=this.restore(JSON.parse(this.storage.getItem(this.saveKey)));}
+    catch{this.state=this.fresh();this.saved=false;}
+    if(options.fresh)this.state=this.fresh();
     this.intro=this.state.started?9:0;this.save();
-    this.hud=new WorkshopHUD(root,action=>this.action(action));
+    this.hud=this.createHUD(root,action=>this.action(action));
     const menu=document.createElement('button');menu.dataset.storyAction='levels';menu.setAttribute('aria-label','انتخاب مرحله');menu.title='انتخاب مرحله';menu.textContent='☷';root.querySelector('.story-small-tools').prepend(menu);
-    this.scene=new WorkshopScene(this.hud.world);
+    this.scene=this.createScene(this.hud.world);
     this.audio=new WorkshopAudio();this.movement=new Movement(this,workshopNavigation);
-    this.interactions=new InteractionController(this);this.interactions.setTool('hand');
+    this.interactions=this.createInteractions();this.interactions.setTool('hand');
     bindWorkshopInput(this);
     if(this.state.completed)this.hud.showDialog('complete',this.state,this.saved);
   }
+  fresh(){return freshState();}
+  restore(value){return restoreState(value);}
+  createHUD(root,onAction){return new WorkshopHUD(root,onAction);}
+  createScene(host){return new WorkshopScene(host);}
+  createInteractions(){return new InteractionController(this);}
   save(){
     try{this.storage?.setItem(this.saveKey,JSON.stringify(snapshot(this.state)));this.saved=!!this.storage;}
     catch{this.saved=false;}
@@ -49,7 +54,7 @@ export class WorkshopGame extends FrameGame {
     }
     if(action==='lab'){this.hud.closeDialog();document.querySelector('[data-mode="lab"]').click();return;}
     if(action==='restart'){
-      this.hud.closeDialog();this.state=freshState();this.intro=0;this.time=0;
+      this.hud.closeDialog();this.state=this.fresh();this.intro=0;this.time=0;
       this.movement.clear();this.interactions.setTool('hand');this.interactions.hints.reset();this.hud.bubble.hidden=true;this.save();return;
     }
     if(action==='recover'){

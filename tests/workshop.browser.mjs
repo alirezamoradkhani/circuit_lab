@@ -6,6 +6,8 @@ const key='circuit-lab.story.workshop.v1';
 await mkdir('.test-artifacts',{recursive:true});
 const browser=await chromium.launch({channel:process.env.PW_CHANNEL||'chrome',headless:true,args:['--enable-unsafe-swiftshader']});
 const errors=[],touchPages=new WeakSet();
+// Exercise the reusable original workshop; the combined stage has its own browser suite.
+async function legacyWorkshop(page){await page.route('**/src/campaign/CampaignHost.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replaceAll('RepairWorkshopGame','WorkshopGame')});});}
 async function pageFor(options={},initial=null){
  const context=await browser.newContext(options);
  const page=await context.newPage();
@@ -13,7 +15,7 @@ async function pageFor(options={},initial=null){
  if(initial)await page.addInitScript(({key,initial})=>localStorage.setItem(key,JSON.stringify(initial)),{key,initial});
  page.on('pageerror',error=>errors.push(error.message));
  page.on('response',r=>{if(r.status()>=400&&!r.url().includes('favicon'))errors.push(r.status()+' '+r.url());});
- await page.goto(url);await page.waitForSelector('.story-world canvas');
+ await legacyWorkshop(page);await page.goto(url);await page.waitForSelector('.story-world canvas');
  return {page,context};
 }
 const action=(p,name)=>p.locator('[data-story-action="'+name+'"]')[touchPages.has(p)?'tap':'click']();
@@ -123,7 +125,7 @@ try {
  const noStorage=await browser.newContext({viewport:{width:1000,height:760}});
  const np=await noStorage.newPage();
  await np.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Unavailable','SecurityError');}}));
- await np.goto(url);await np.waitForSelector('.story-intro');await begin(np);await action(np,'help');
+ await legacyWorkshop(np);await np.goto(url);await np.waitForSelector('.story-intro');await begin(np);await action(np,'help');
  assert.match(await np.locator('.story-dialog').innerText(),/در دسترس نیست/);
  await noStorage.close();console.log('PASS fallback: gameplay starts when persistent storage is unavailable.');
 

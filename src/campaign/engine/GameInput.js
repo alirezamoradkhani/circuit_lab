@@ -44,9 +44,10 @@ export function bindGameInput(game,{isUnlocked=()=>true}={}){
     if(game.hud.dialog.open)return;
     if(!isUnlocked())return;
     if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)){
-      e.preventDefault();m.keys.add(e.code);game.audio.unlock();return;
+      e.preventDefault();if(game.scene.editing)return;m.keys.add(e.code);game.audio.unlock();return;
     }
     if(e.repeat)return;
+    if(e.code==='Escape'&&game.scene.editing&&!game.interactions.cable?.start){e.preventDefault();game.action('repair-close');return;}
     if(e.code==='Escape'&&game.interactions.cable?.start){e.preventDefault();game.interactions.cancelCable();return;}
     const commands={KeyE:'interact',KeyC:'cable',KeyM:'meter',KeyH:'hint',KeyR:'reset',Escape:'hand'};
     if(e.code==='Tab'&&(e.target===canvas||e.target===document.body)){e.preventDefault();game.action('bag');}

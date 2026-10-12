@@ -12,7 +12,7 @@ export class CampaignHost {
   const options={fresh,replay,completed:()=>this.meta.completed,onStage:n=>this.open(n,{replay:this.meta.completed.includes(n)}),onNext:()=>this.open(Math.min(12,number+1)),onRestart:asReplay=>this.open(number,{fresh:true,replay:asReplay||replay}),onComplete:n=>{if(!this.meta.completed.includes(n))this.meta.completed.push(n);this.saveMeta();}};
   try{
    let game;
-   if(number===1){const {WorkshopGame}=await import('./WorkshopGame.js');if(token!==this.generation)return;game=new WorkshopGame(this.root,options);}
+   if(number===1){const {RepairWorkshopGame}=await import('./RepairWorkshopGame.js');if(token!==this.generation)return;game=new RepairWorkshopGame(this.root,options);}
    else{const [{CampaignGame},definition]=await Promise.all([import('./CampaignGame.js'),loadDefinition(number)]);if(token!==this.generation)return;game=new CampaignGame(this.root,definition,options);}
    this.game=game;this.meta.active=number;this.meta.replay=replay;this.saveMeta();game.setActive(this.active);
   }catch(error){console.error('Campaign could not open:',error);if(token!==this.generation)return;
