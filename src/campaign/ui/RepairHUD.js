@@ -11,6 +11,7 @@ export class RepairHUD extends WorkshopHUD {
    goal:s=>s.cart<1?'cart':!s.door?'cabinet':!s.receipt?'receipt':'exit',
    objective:s=>s.cart<1?'راه چرخ‌دستی را باز کن تا به تابلو برسی.':!s.door?'تابلو کرکره را عیب‌یابی کن؛ جریان مجاز چراغ کنترل ۰٫۵ آمپر است.':!s.receipt?'تعمیر تأیید شد؛ رسید کنار میز را بردار.':'کابل رِی را جدا کن و از در بیرون برو.'};
   this.root.querySelector('.story-dock [data-story-action="meter"] span').textContent='مولتی‌متر';
+  this.root.querySelector('.story-heading .story-kicker').textContent='شهر روشن / مأموریت ۱';
   this.root.querySelector('.story-heading h1').textContent='تعمیرگاه خاموش';
   this.root.querySelector('.story-intro p').textContent='کرکره خراب است. رِی باید سیم‌کشی و جریان تابلو را تعمیر کند تا از تعمیرگاه بیرون برود.';
   const hot=document.createElement('button');hot.dataset.storyObject='cabinet';hot.type='button';hot.innerHTML='▤<span>تابلو کرکره</span>';hot.setAttribute('aria-label','تابلو کرکره');root.querySelector('.story-hotspots').append(hot);this.nodes.cabinet=hot;

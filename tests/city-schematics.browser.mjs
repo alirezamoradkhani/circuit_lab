@@ -25,7 +25,7 @@ async function checkDiagram(){
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
 }
 try{
- await page.goto('http://localhost:4173/#city');
+ await page.goto('http://localhost:4173/tests/fixtures/legacy-city.html#city');
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:844,height:390}]){
   await page.setViewportSize(viewport);
   for(const [index,id] of [[5,'backup'],[6,'pumps'],[7,'radio'],[8,'feeder'],[9,'isolation'],[10,'transfer'],[11,'bridge']]){

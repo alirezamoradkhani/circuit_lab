@@ -1,9 +1,10 @@
 import {campaignCatalog,loadDefinition} from './levels/catalog.js';
-const META='circuit-lab.story.progress.v1';
+const META='circuit-lab.game.progress.v1';
+const LEGACY_META='circuit-lab.story.progress.v1';
 export class CampaignHost {
  constructor(root){
   this.root=root;this.active=false;this.game=null;this.generation=0;this.meta={active:1,completed:[]};
-  try{this.storage=window.localStorage;const saved=JSON.parse(this.storage.getItem(META));if(saved&&campaignCatalog.some(e=>e.number===saved.active))this.meta={active:saved.active,replay:saved.replay===true,completed:Array.isArray(saved.completed)?saved.completed:[]};}catch{}
+  try{this.storage=window.localStorage;const saved=JSON.parse(this.storage.getItem(META));if(!saved){const previous=JSON.parse(this.storage.getItem(LEGACY_META));const repaired=JSON.parse(this.storage.getItem('circuit-lab.story.workshop.repair.v1'));if(Array.isArray(previous?.completed))this.meta.completed=previous.completed.filter(n=>campaignCatalog.some(e=>e.number===n)&&(n!==1||repaired?.completed===true&&repaired?.repair?.accepted===true));}if(saved&&campaignCatalog.some(e=>e.number===saved.active))this.meta={active:saved.active,replay:saved.replay===true,completed:Array.isArray(saved.completed)?saved.completed:[]};}catch{}
  }
  saveMeta(){try{this.storage?.setItem(META,JSON.stringify(this.meta));}catch{}}
  async open(number,{fresh=false,replay=false}={}){

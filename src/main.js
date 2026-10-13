@@ -3,7 +3,6 @@ import {CircuitBuilder} from './builder/CircuitBuilder.js?v=city1';
 import {levels,topics,topicForLevel} from './data/levels.js';
 import {LessonSession} from './lessons/LessonSession.js';
 import {Schematics} from './lessons/Schematics.js';
-import {CityGame} from './city/CityGame.js?v=missions9';
 
 const $=id=>document.getElementById(id);
 const ui={svg:$('circuitSvg'),controls:$('levelControls'),feedback:$('feedbackText'),status:$('statusChip'),next:$('nextButton')};
@@ -11,7 +10,6 @@ const boardZoom=$('boardZoom'),zoomValue=$('zoomValue');
 const diagrams=new Schematics(ui.svg);
 const completed=new Set();
 let mode='lab';
-const city=new CityGame($('cityMode'));
 const story=workshopLoader($('storyMode'));
 let current=0,session,score=0,toastTimer;
 const builder=new CircuitBuilder(ui.svg,ui.controls,()=>{
@@ -108,32 +106,31 @@ $('boardZoom').addEventListener('click',e=>{const button=e.target.closest('[data
 $('hintButton').addEventListener('click',()=>{session.hinted=true;if(builder.active){builder.message=session.level.hint;builder.render();}else{ui.feedback.textContent=session.level.hint;}});
 ui.next.addEventListener('click',()=>{if(current<levels.length-1)loadLevel(current+1);else{clearTimeout(toastTimer);$('toast').textContent='از منوی سمت چپ می‌توانی تمرین دیگری انتخاب کنی.';$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2500);}});
 document.addEventListener('keydown',e=>{if(mode!=='lab'||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='r')loadLevel(current);if(e.key.toLowerCase()==='h')$('hintButton').click();});
+function modeFromHash(){return ['#game','#workshop','#city'].includes(location.hash)?'story':'lab';}
 function setMode(nextMode){
- mode=nextMode;
- document.body.classList.toggle('city-theme',mode==='city');
+ mode=nextMode==='lab'?'lab':'story';
+ document.body.classList.remove('city-theme');
  document.body.classList.toggle('story-theme',mode==='story');
- document.querySelector('.brand strong').textContent=mode==='story'?'مدار گمشده':mode==='city'?'شهر روشن':'آزمایشگاه مدار';
- document.querySelector('.brand small').textContent=mode==='story'?'THE LOST CIRCUIT':mode==='city'?'CITY OPERATIONS':'CIRCUIT LAB';
- document.querySelector('meta[name="theme-color"]').content=mode==='story'?'#303830':mode==='city'?'#1b3443':'#101827';
+ document.querySelector('.brand strong').textContent=mode==='story'?'شهر روشن':'آزمایشگاه مدار';
+ document.querySelector('.brand small').textContent=mode==='story'?'CITY REPAIR':'CIRCUIT LAB';
+ document.querySelector('meta[name="theme-color"]').content=mode==='story'?'#303830':'#101827';
  document.querySelector('.main-grid').hidden=mode!=='lab';
- $('cityMode').hidden=mode!=='city';
  $('storyMode').hidden=mode!=='story';
  story.setActive(mode==='story');
  builder.active=mode==='lab'&&session.level.type==='builder';
- city.setActive(mode==='city');
  boardZoom.hidden=!builder.active;
  $('progressLabel').hidden=mode!=='lab';
  document.querySelector('.app-shell > footer').hidden=mode!=='lab';
  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+ if(mode==='story'&&location.hash!=='#game')history.replaceState(null,'',location.pathname+location.search+'#game');
 }
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
  setMode(button.dataset.mode);
- history.replaceState(null,'',location.pathname+location.search+(mode==='story'?'#workshop':mode==='city'?'#city':''));
+ history.replaceState(null,'',location.pathname+location.search+(mode==='story'?'#game':''));
 }));
-window.addEventListener('hashchange',()=>setMode(location.hash==='#workshop'?'story':location.hash==='#city'?'city':'lab'));
+window.addEventListener('hashchange',()=>setMode(modeFromHash()));
 $('soundButton').hidden=true;
 const total=document.querySelector('.level-panel .panel-title span:last-child');if(total)total.textContent=levels.length.toLocaleString('fa-IR')+' مرحله';
 loadLevel(0);
 
-if(location.hash==='#workshop')setMode('story');
-else if(location.hash==='#city')setMode('city');
+setMode(modeFromHash());

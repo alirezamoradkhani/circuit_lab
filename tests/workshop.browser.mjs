@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {mkdir} from 'node:fs/promises';
-const url=process.env.STORY_TEST_URL||'http://localhost:4173/#workshop';
+const url=process.env.STORY_TEST_URL||'http://localhost:4173/tests/fixtures/legacy-city.html#workshop';
 const key='circuit-lab.story.workshop.v1';
 await mkdir('.test-artifacts',{recursive:true});
 const browser=await chromium.launch({channel:process.env.PW_CHANNEL||'chrome',headless:true,args:['--enable-unsafe-swiftshader']});

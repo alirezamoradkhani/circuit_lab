@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="بازی آموزشی مدارهای الکتریکی">
+  <link rel="icon" type="image/svg+xml" href="assets/circuit-mark.svg">
+  <title>آزمایشگاه مدار | Circuit Lab</title>
+  <link rel="stylesheet" href="styles.css?v=lesson-rebuild7">
+  <link rel="stylesheet" href="src/city/city.css?v=city3">
+  <link rel="stylesheet" href="src/city/town.css?v=city4">
+  <link rel="stylesheet" href="src/city/adventure.css?v=adventure2">
+  <link rel="stylesheet" href="src/city/scene-messages.css?v=missions9">
+  <link rel="stylesheet" href="src/city/shop.css?v=missions9">
+  <link rel="stylesheet" href="src/city/street.css?v=missions9">
+  <link rel="stylesheet" href="src/city/circuit-popup.css?v=missions9">
+  <link rel="stylesheet" href="src/city/challenges/challenges.css?v=missions9">
+  <link rel="stylesheet" href="src/campaign/story.css?v=workshop1">
+  <link rel="stylesheet" href="src/campaign/repair.css?v=repair1">
+  <link rel="stylesheet" href="src/campaign/campaign.css?v=interaction2">
+  <link rel="stylesheet" href="src/city/operations.css?v=operations1">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">⚡</span><div><strong>آزمایشگاه مدار</strong><small>CIRCUIT LAB</small></div></div>
+      <div class="top-actions"><nav class="mode-switch" aria-label="انتخاب حالت بازی"><button type="button" data-mode="lab" aria-pressed="true">آزمایشگاه</button><button type="button" data-mode="city" aria-pressed="false">شهر روشن</button><button type="button" data-mode="story" aria-pressed="false">داستان رِی</button></nav><span class="progress-label" id="progressLabel">مرحله ۱ از ۱۸۰</span><button class="icon-button" id="soundButton" aria-label="صدا">🔊</button></div>
+    </header>
+
+
+    <section id="storyMode" hidden aria-label="مدار گمشده؛ داستان رِی"></section>
+    <section id="cityMode" hidden aria-label="مأموریت‌های شهر"></section>
+    <main class="main-grid">
+      <section class="game-column">
+        <div class="mission-card">
+          <div><span class="eyebrow" id="levelEyebrow">مأموریت ۱ · مدار پایه</span><h1 id="levelTitle">اتاق را روشن کن</h1><p id="levelDescription">یک مسیر کامل از باتری تا لامپ بساز.</p></div>
+          <div class="score"><span>امتیاز</span><b id="scoreValue">۰</b></div>
+        </div>
+
+        <div class="circuit-stage" id="circuitStage">
+          <div class="stage-top"><div class="stage-status"><span id="statusChip" class="status-chip off">مدار باز</span><span class="moves">حرکت: <b id="movesValue">۰</b></span></div><div class="stage-actions" aria-label="کنترل‌های مرحله"><button class="stage-icon" id="undoButton" type="button" aria-label="برگشت یک حرکت" title="برگشت یک حرکت" disabled>↶</button><button class="stage-icon" id="hintButton" type="button" aria-label="راهنمایی" title="راهنمایی">?</button><button class="stage-icon" id="resetButton" type="button" aria-label="شروع دوباره" title="شروع دوباره">↻</button></div></div>
+          <div class="board-zoom-overlay" id="boardZoom" hidden aria-label="کنترل بزرگ‌نمایی برد"><button type="button" data-board-tool="zoom-out" aria-label="کوچک‌نمایی">−</button><output id="zoomValue">۱۰۰٪</output><button type="button" data-board-tool="zoom-in" aria-label="بزرگ‌نمایی">+</button><button type="button" data-board-tool="zoom-reset" aria-label="بازگشت به اندازهٔ اصلی">⌂</button></div>
+          <svg id="circuitSvg" viewBox="0 0 900 440" role="img" aria-label="مدار الکتریکی تعاملی"></svg>
+          <div id="levelControls"></div><div class="feedback" id="feedback"><span class="feedback-icon">💡</span><span id="feedbackText">برای شروع، اتصال‌های قرمز را کامل کن.</span></div>
+        </div><div class="circuit-legend"><b>راهنمای مدار</b><span><i class="legend-dot red"></i> اتصال ناقص</span><span><i class="legend-dot green"></i> اتصال کامل</span><span><i class="legend-line"></i> سیم فعال</span><span>روی کادر یا کلید کلیک کن</span></div><div class="controls-row"><button class="next-button" id="nextButton" hidden>مرحلهٔ بعد ←</button></div>
+      </section>
+
+      <aside class="side-column">
+        <section class="panel lesson-panel"><div class="panel-title"><span>یادگیری این مرحله</span><span class="lesson-number" id="lessonNumber">۰۱</span></div><div id="lessonContent"></div></section>
+        <section class="panel level-panel"><div class="panel-title"><span>موضوعات و مراحل</span><span>۱۸۰ مرحله</span></div><div class="topic-tabs" id="topicTabs"></div><div class="level-list" id="levelList"></div></section>
+        <section class="panel formula-panel" id="formulaPanel"><div class="panel-title"><span>فرمول مهم</span><span class="formula-tag">قانون اهم</span></div><div class="formula">V = I × R</div><p>ولتاژ برابر است با جریان ضربدر مقاومت.</p></section>
+      </aside>
+    </main>
+    <footer><span>آموزش مدارهای الکتریکی · کارگاه و حل مسئله</span><span>کلید H برای راهنمایی · R برای شروع دوباره</span></footer>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="tests/fixtures/legacy-main.js?v=workshop1"></script>
+</body>
+</html>

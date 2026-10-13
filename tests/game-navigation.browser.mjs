@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {mkdir} from 'node:fs/promises';
+await mkdir('.test-artifacts/unified',{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const p=await browser.newPage({viewport:{width:1440,height:900}}),errors=[],requests=[];
+ p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>requests.push(r.url()));
+ await p.addInitScript(()=>{if(!localStorage.getItem('circuit-lab.game.progress.v1'))localStorage.setItem('circuit-lab.story.progress.v1',JSON.stringify({active:9,completed:[2,7]}));});
+ await p.goto('http://localhost:4173/#city');await p.locator('.story-world canvas').waitFor();
+ assert.equal(await p.locator('.mode-switch button').count(),2);
+ assert.deepEqual(await p.locator('.mode-switch button').allTextContents(),['آزمایشگاه','شهر روشن']);
+ assert.equal(new URL(p.url()).hash,'#game');assert.equal(await p.locator('#cityMode').count(),0);
+ assert.equal(await p.locator('.story-heading h1').innerText(),'تعمیرگاه خاموش');
+ assert.equal(requests.some(url=>url.includes('/city/CityGame.js')),false,'The independent city game is not loaded');
+ const progress=await p.evaluate(()=>JSON.parse(localStorage.getItem('circuit-lab.game.progress.v1')));
+ assert.equal(progress.active,1);assert.deepEqual(progress.completed,[2,7]);
+ await p.screenshot({path:'.test-artifacts/unified/desktop.png'});
+ await p.locator('[data-story-action="begin"]').click();await p.locator('[data-story-action="skip"]').click();
+ await p.locator('[data-story-action="levels"]').click();assert.match(await p.locator('.story-dialog').innerText(),/تعمیر تابلو کرکره/);
+ await p.locator('[data-story-action="stage:2"]').click();await p.locator('.campaign-stage').waitFor();
+ await p.locator('[data-mode="lab"]').click();assert.ok(await p.locator('.main-grid').isVisible());
+ await p.locator('[data-mode="story"]').click();assert.ok(await p.locator('.campaign-stage').isVisible());
+ await p.evaluate(()=>location.hash='#workshop');await p.waitForURL('**/#game');
+ await p.reload();await p.locator('.campaign-stage').waitFor();
+ assert.match(await p.locator('.story-heading h1').innerText(),/باد/,'New progress resumes normally after migration');
+ await p.setViewportSize({width:390,height:844});
+ assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ assert.equal(await p.locator('.mode-switch button').count(),2);
+ await p.screenshot({path:'.test-artifacts/unified/mobile.png'});
+ assert.deepEqual(errors,[]);console.log('PASS unified modes: two entries, old links redirected, no CityGame instance, first repair visible, progress migration, stage resume and mobile.');
+}finally{await browser.close();}

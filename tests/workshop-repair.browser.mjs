@@ -54,7 +54,7 @@ try{
  await act('hand');const wa=await coords('lamp:1'),wb=await coords('source:1');await p.mouse.click((wa.x+wb.x)/2,(wa.y+wb.y)/2);
  await act('repair-remove');assert.equal(await p.evaluate(()=>game.state.repair.board.wires.length),3,'Selected wire can actually be removed');
  await act('cable');await p.mouse.click(wa.x,wa.y);await p.mouse.click(wb.x,wb.y);assert.equal(await p.evaluate(()=>game.state.repair.board.wires.length),4,'Removed wire can be restored');
- await p.evaluate(()=>{game.dispose();localStorage.removeItem('circuit-lab.story.progress.v1');});
+ await p.evaluate(()=>{game.dispose();localStorage.removeItem('circuit-lab.game.progress.v1');});
  await p.setViewportSize({width:1440,height:900});await p.goto('http://localhost:4173/#workshop');await p.locator('.story-world canvas').waitFor();
  assert.equal(await p.locator('.story-heading h1').innerText(),'تعمیرگاه خاموش','Actual site mounts the combined workshop');
  await p.screenshot({path:fileURLToPath(new URL('repair-real-site.png',artifacts))});

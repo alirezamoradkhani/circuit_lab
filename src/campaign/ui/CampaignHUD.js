@@ -8,7 +8,7 @@ export {equipmentStatus} from './EquipmentStatus.js';
 import {escapeHTML,equipmentStatus} from './EquipmentStatus.js';
 const fa=n=>Number(n).toLocaleString('fa-IR',{maximumFractionDigits:2});
 export function stageMenu(active,completed=[]){
- return '<span class="story-kicker">مدار گمشده · دوازده ایستگاه</span><h2>مسیر داستان</h2><p>هر مرحله معمای خودش را دارد. بازپخش، ذخیرهٔ مسیر اصلی را جایگزین نمی‌کند.</p><div class="campaign-stage-list">'+campaignCatalog.map(e=>'<button data-story-action="stage:'+e.number+'" '+(e.number===active?'aria-current="step"':'')+'><span>'+fa(e.number)+'</span><b>'+e.title+'</b><small>'+(completed.includes(e.number)?'✓ تمام شده':e.number===active?'اینجا هستی':'ورود به مرحله')+'</small></button>').join('')+'</div>';
+ return '<span class="story-kicker">شهر روشن · دوازده ایستگاه</span><h2>مأموریت‌های رِی</h2><p>هر مرحله معمای خودش را دارد. بازپخش، ذخیرهٔ مسیر اصلی را جایگزین نمی‌کند.</p><div class="campaign-stage-list">'+campaignCatalog.map(e=>'<button data-story-action="stage:'+e.number+'" '+(e.number===active?'aria-current="step"':'')+'><span>'+fa(e.number)+'</span><b>'+e.title+'</b><small>'+(completed.includes(e.number)?'✓ تمام شده':e.number===active?'اینجا هستی':'ورود به مرحله')+'</small></button>').join('')+'</div>';
 }
 function content(kind,session,saved,completed){
  const d=session.definition,w=session.world;
@@ -25,7 +25,7 @@ export class CampaignHUD extends SceneHUD {
   super(root,onAction,{
    safeInsets:{top:26,bottom:26},messagesOutsideScene:true,
    names,pins:session.world.all().filter(e=>e instanceof Device||e instanceof Source||e instanceof SourceSelector).map(e=>e.id),
-   labels:{chapter:'مدار گمشده / مرحلهٔ '+fa(session.definition.number),title:session.definition.title,introChapter:'ایستگاه '+fa(session.definition.number),introTitle:session.definition.title,introText:session.definition.intro},
+   labels:{chapter:'شهر روشن / مرحلهٔ '+fa(session.definition.number),title:session.definition.title,introChapter:'ایستگاه '+fa(session.definition.number),introTitle:session.definition.title,introText:session.definition.intro},
    available:(id)=>{const e=session.world.get(id);return e.state.visible&&!e.state.collected;},goal:()=>session.definition.ready(session.world,session.ctx)?'exit':session.definition.focus?.(session.world,session.ctx)??null,objective:()=>session.objective(),
    canUnplug:(s,id)=>session.world.connections.has(id)||[...session.world.connections.values()].some(c=>c.source===id),
    interactionLabel:(s,id)=>names[id]??'بررسی وسیله',
