@@ -2,7 +2,7 @@
 const methods={session:['inspect','install','pin','removeWire','toggleLoad','toggleSwitch','hint','resetFuse','test'],shop:['placeProbe','remove','install'],street:['inspect','replace','removeCable','isolate'],challenge:['act']};
 const key='circuit-lab.city-repairs.v1';
 export class CityDrafts {
- constructor(storage){this.storage=storage;this.saved=!!storage;this.logs={};try{const v=JSON.parse(storage?.getItem(key)||'null');if(v?.version===1&&v.logs&&typeof v.logs==='object')this.logs=v.logs;}catch{this.saved=false;}}
+ constructor(storage,storageKey=key){this.key=storageKey;this.storage=storage;this.saved=!!storage;this.logs={};try{const v=JSON.parse(storage?.getItem(this.key)||'null');if(v?.version===1&&v.logs&&typeof v.logs==='object')this.logs=v.logs;}catch{this.saved=false;}}
  attach(s,{fresh=false}={}){
   const id=s.mission.id,log=fresh?[]:this.logs[id]??[];
   if(!Array.isArray(log)||log.length>1000||log.some(e=>!Array.isArray(e)||!Object.hasOwn(methods,e[0])||!methods[e[0]].includes(e[1])||!Array.isArray(e[2])||e[2].length>2||e[2].some(v=>!['number','boolean','string'].includes(typeof v)||typeof v==='number'&&!Number.isFinite(v)||typeof v==='string'&&v.length>128))){this.logs[id]=[];this.saved=false;return this.attach(s,{fresh:true});}
@@ -16,5 +16,5 @@ export class CityDrafts {
   }
   if(fresh)this.save();return s;
  }
- save(){try{if(!this.storage)throw Error('storage unavailable');this.storage.setItem(key,JSON.stringify({version:1,logs:this.logs}));this.saved=true;}catch{this.saved=false;}}
+ save(){try{if(!this.storage)throw Error('storage unavailable');this.storage.setItem(this.key,JSON.stringify({version:1,logs:this.logs}));this.saved=true;}catch{this.saved=false;}}
 }
