@@ -2,6 +2,7 @@ import {CityGame} from '../../city/CityGame.js';
 import {renderCabinet} from '../../city/AdventureView.js';
 import {deviceCircuit} from './DeviceCircuit.js';
 import {deviceReadings} from './devices.js';
+import {organizeDevicePanel} from './DevicePanelLayout.js';
 export class DeviceBoardController extends CityGame {
  constructor(root,session,devices,onChange){super(root);this.index=session.index;this.sessions.set(this.index,session);this.devices=devices;this.onChange=onChange;this.root.innerHTML='<div data-stage></div>';this.active=false;
   this.dragAbort=new AbortController();const options={signal:this.dragAbort.signal};
@@ -46,6 +47,7 @@ export class DeviceBoardController extends CityGame {
   if(s.mission.id==='clinic'&&s.tool==='meter'){
    const r=deviceReadings(s,d);editor.querySelector('.component-meter')?.remove();editor.querySelector('.cabinet-panel').insertAdjacentHTML('afterbegin','<div class="component-meter"><strong>'+d.label+'</strong><output dir="ltr">'+r.voltage.toFixed(2)+' V</output><span dir="ltr">I = '+r.current.toFixed(2)+' A</span></div>');
   }
+  organizeDevicePanel(editor, s, d);
   this.root.scrollTop=scroll;
   this.onChange?.(s);
  }
@@ -53,7 +55,9 @@ export class DeviceBoardController extends CityGame {
   if(e.target.closest('[data-ray-meter]')){const s=this.sessions.get(this.index);s.tool='meter';this.renderGame();return;}
   const action=e.target.closest('[data-action]')?.dataset.action;
   if(['restart','map','next','close-circuit','close-panel'].includes(action))return;
+  const switchId=e.target.closest('[data-ray-switch]')?.dataset.raySwitch;
   super.handle(e);
+  if(switchId)this.root.querySelector('[data-ray-switch="'+switchId+'"]')?.focus({preventScroll:true});
  }
  close(){this.shopInteractions.cancel();this.active=false;const s=this.sessions.get(this.index);s.pending=null;}
  dispose(){this.close();this.dragAbort.abort();this.root.innerHTML='';}
