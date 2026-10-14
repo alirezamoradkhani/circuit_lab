@@ -1,5 +1,6 @@
 // Local regression fixture for the retired independent city UI.
-import {workshopLoader} from '../../src/campaign/mount.js';
+import {CampaignHost} from '../../src/campaign/CampaignHost.js';
+const workshopLoader=root=>new CampaignHost(root);
 import {CircuitBuilder} from '../../src/builder/CircuitBuilder.js?v=city1';
 import {levels,topics,topicForLevel} from '../../src/data/levels.js';
 import {LessonSession} from '../../src/lessons/LessonSession.js';

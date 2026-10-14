@@ -11,7 +11,7 @@ async function mesh(page,x,z,y=.45){const p=await page.evaluate(async({x,z,y})=>
 try{
  for(const route of ['paper','dock']){
   const mobile=route==='dock',page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1440,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.STORY_TEST_URL||'http://localhost:4173/#workshop');await action(page,'levels');await action(page,'stage:3');await action(page,'begin');
+  await page.goto(process.env.STORY_TEST_URL||'http://localhost:4173/tests/fixtures/legacy-city.html#workshop');await action(page,'levels');await action(page,'stage:3');await action(page,'begin');
   if(route==='paper'){
    await wire(page,'sign');await wire(page,'fan');await action(page,'hand');await mesh(page,-2,0);
    await page.waitForSelector('[data-story-action="op:fan-direction"]');assert.match(await page.locator('.campaign-object-tools header p').innerText(),/پیشخوان/);

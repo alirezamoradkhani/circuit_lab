@@ -1,2 +1,2 @@
-import {CampaignHost} from './CampaignHost.js';
-export function workshopLoader(root){return new CampaignHost(root);}
+import {CityRayHost} from './ray-city/CityRayHost.js';
+export function workshopLoader(root){return new CityRayHost(root);}

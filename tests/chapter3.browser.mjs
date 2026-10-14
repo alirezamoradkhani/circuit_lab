@@ -13,7 +13,7 @@ async function mesh(x,z,y=.45){const p=await point(x,z,y);await page.mouse.click
 async function command(name){await page.waitForSelector('[data-story-action="op:'+name+'"]',{timeout:15000});await action('op:'+name);}
 async function waitState(stage,expression){await page.waitForFunction(({key,stage,expression})=>{const s=JSON.parse(localStorage.getItem(key))?.levels[stage];return s&&new Function('s','return '+expression)(s);},{key,stage,expression},{timeout:15000});}
 try{
- await page.goto(process.env.STORY_TEST_URL||'http://localhost:4173/#workshop');await page.waitForSelector('.story-world canvas');await goStage(9);
+ await page.goto(process.env.STORY_TEST_URL||'http://localhost:4173/tests/fixtures/legacy-city.html#workshop');await page.waitForSelector('.story-world canvas');await goStage(9);
  await action('battery');await command('drop');
  await mesh(-.5,0,.7);await command('clear');await waitState('09-capacitor-passage','s.flags.pathClear===true');
  await mesh(-4.6,-1.6,.45);await command('charge-cap');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.energy>=71.9");await command('release-cap');await waitState('09-capacitor-passage',"s.world.entities.find(e=>e.id==='capacitor').state.charging===false");

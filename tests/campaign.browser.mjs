@@ -3,7 +3,7 @@ import {chromium} from 'playwright';
 import {mkdir} from 'node:fs/promises';
 await mkdir('.test-artifacts',{recursive:true});
 const browser=await chromium.launch({channel:process.env.PW_CHANNEL||'chrome',headless:true,args:['--enable-unsafe-swiftshader']});
-const base=process.env.STORY_TEST_URL||'http://localhost:4173/#workshop';
+const base=process.env.STORY_TEST_URL||'http://localhost:4173/tests/fixtures/legacy-city.html#workshop';
 const errors=[];
 const action=(p,name)=>p.locator('[data-story-action="'+name+'"]').click();
 const object=(p,id)=>p.locator('[data-story-object="'+id+'"]').click();

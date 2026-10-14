@@ -15,7 +15,7 @@ async function inspect(label){
  console.log('PASS '+label+': '+r.nodes.length+' separated targets, scene height '+r.world.h);
 }
 try{
- await p.goto(process.env.STORY_TEST_URL||'http://localhost:4173/#workshop');await p.waitForSelector('.story-world canvas');
+ await p.goto(process.env.STORY_TEST_URL||'http://localhost:4173/tests/fixtures/legacy-city.html#workshop');await p.waitForSelector('.story-world canvas');
  for(const stage of [3,8,11,12]){
   await action('levels');await action('stage:'+stage);await p.waitForSelector('.campaign-stage');await action('begin');await action('cable');
   for(const [name,viewport]of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}],['landscape',{width:844,height:390}]]){

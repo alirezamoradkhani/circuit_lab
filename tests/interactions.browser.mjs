@@ -10,7 +10,7 @@ async function settle(){await p.waitForTimeout(1700);return state();}
 async function point(x,z,y=.5){return p.evaluate(async({x,z,y})=>{const T=await import('/src/campaign/engine/three.js'),r=document.querySelector('.story-world canvas').getBoundingClientRect(),a=r.width/r.height,h=Math.max(7.3,9.4/a),c=new T.OrthographicCamera(-h*a,h*a,h,-h,.1,100);c.position.set(8,13.7,19);c.lookAt(0,.7,0);c.updateMatrixWorld();const v=new T.Vector3(x,y,z).project(c);return {x:r.x+(v.x*.5+.5)*r.width,y:r.y+(-v.y*.5+.5)*r.height};},{x,z,y});}
 async function mesh(x,z,y){const q=await point(x,z,y);await p.mouse.click(q.x,q.y);}
 try{
- await p.goto('http://localhost:4173/#workshop');await action('levels');await action('stage:3');await action('begin');
+ await p.goto('http://localhost:4173/tests/fixtures/legacy-city.html#workshop');await action('levels');await action('stage:3');await action('begin');
  let before=await settle();await mesh(-2,0,.6);await p.waitForSelector('[data-story-action="op:fan-direction"]');
  let after=await settle();assert.deepEqual(entity(after,'ray').position,entity(before,'ray').position,'selection must not force movement');
  await action('op:fan-direction');await p.waitForFunction(()=>JSON.parse(localStorage.getItem('circuit-lab.story.campaign.v1')).levels['03-market'].world.entities.find(e=>e.id==='fan').state.direction===0);after=await state();assert.notDeepEqual(entity(after,'ray').position,entity(before,'ray').position,'remote command must walk then execute');
