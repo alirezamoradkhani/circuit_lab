@@ -18,7 +18,8 @@
     "test:campaign:browser": "node tests/campaign.browser.mjs && node tests/chapter3.browser.mjs && node tests/market.browser.mjs && node tests/readability.browser.mjs && node tests/interactions.browser.mjs",
     "test:city:browser": "node tests/operations.browser.mjs && node tests/city-schematics.browser.mjs",
     "test:market:browser": "node tests/market.browser.mjs",
-    "test:readability:browser": "node tests/readability.browser.mjs"
+    "test:readability:browser": "node tests/readability.browser.mjs",
+    "test:ray-city:controls": "node tests/ray-device-controls.browser.mjs"
   },
   "type": "module",
   "dependencies": {
