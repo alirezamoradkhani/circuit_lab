@@ -34,6 +34,7 @@ try{
    await p.evaluate(id=>{const g=window.__rayCityHost.game,d=g.devices.find(d=>id==='city-device:'+d.id);g.movement.clear();g.state.player={...d.walk};},id);
    await p.locator('[data-story-object="'+id+'"]').click();await p.locator('.ray-device-dialog[open]').waitFor({timeout:20000});
    assert.equal(await p.locator('.ray-device-dialog svg.ray-branch-circuit,.ray-device-dialog svg.shop-circuit').count(),1,'Only one device circuit');
+   if(index===1&&id==='city-device:shop-sign'){const bounds=await p.locator('svg.shop-circuit').boundingBox();assert.ok(bounds.height>=170,'Shop circuit keeps diagram dimensions instead of icon dimensions');}
    await p.locator('[data-tool="meter"]').click();await p.locator('[data-story-action="device-close"]').click();
   }
  }
