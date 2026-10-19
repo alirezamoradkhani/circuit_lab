@@ -8,7 +8,7 @@ import {plaque} from '../visual/materials.js';
 export class CityRayScene extends WorkshopScene {
  constructor(host,session,devices){
   super(host);
-  this.citySession=session;this.devices=devices;this.deviceViews=new Map();this.wireViews=[];
+  this.citySession=session;this.devices=devices;this.deviceViews=new Map();this.terminalViews=new Map();this.partOwners=new Map();this.connectionRoot=group(this.scene);this.previewRoot=group(this.scene);this.connectionKey='';this.previewKey='';
   this.room.root.visible=false;
   const hiddenRoots=new Set();
   for(const node of Object.values(this.props)){
@@ -47,30 +47,19 @@ export class CityRayScene extends WorkshopScene {
   for(const d of this.devices){
    const view=this.makeDevice(d);this.deviceViews.set(d.id,view);
   }
-  const source=this.devices[0];
-  const accents=['#6e9a8a','#c39a54','#9b6b5c','#71899f','#8c9b6a','#b37955'];
-  const count=Math.max(1,this.devices.length-1);
-  for(const [index,d] of this.devices.slice(1).entries()){
-   const a=source.position,b=d.position;
-   const lane=2.28+index*.15,lower=-2.28-index*.15;
-   const accent=accents[index%accents.length];
-   const plus=m.cable.clone(),minus=m.cable.clone();
-   plus.color.set(accent);minus.color.set(accent);
-   plus.emissive=new T.Color(accent);minus.emissive=new T.Color(accent);
-   plus.emissiveIntensity=.06;minus.emissiveIntensity=.06;
-   const sourceOffset=(index-(count-1)/2)*.16,targetOffset=(index%2?-.14:.14);
-   const wires=[
-    pipe(this.boardRoot,plus,[[a.x+sourceOffset,.18,a.z+.28],[a.x+sourceOffset,.18,lane],[b.x+targetOffset,.18,lane],[b.x+targetOffset,.18,b.z+.28]],.045),
-    pipe(this.boardRoot,minus,[[a.x-sourceOffset,.2,a.z-.28],[a.x-sourceOffset,.2,lower],[b.x-targetOffset,.2,lower],[b.x-targetOffset,.2,b.z-.28]],.045)
-   ];
-   const dimAccent=new T.Color(accent).multiplyScalar(.58);
-   this.wireViews.push({id:d.id,wires,plus,minus,accent,dimAccent});
-  }
+  for(const d of this.devices)for(const partId of d.partIds||[])this.partOwners.set(partId,d.id);
  }
  makeDevice(d){
   const m=this.materials,root=group(this.boardRoot,'city-device:'+d.id);root.position.set(d.position.x,.08,d.position.z);
   const base=box(root,m.dark,0,.03,0,.86,.06,.58);base.castShadow=false;
   const label=box(root,plaque(d.label,'#d8c99a','#3b4037',256,58),0,.085,.54,.9,.024,.2);
+  const terminals=[];
+  for(const [side,x] of [['0',-.5],['1',.5]]){
+   const id='city-terminal:'+d.id+':'+side,terminal=group(root,id);terminal.position.set(x,.22,0);
+   const material=m.brass.clone();const node=ball(terminal,material,0,0,0,.105);
+   const pin=(d.partIds?.[0]||'')+':'+side;const position={x:d.position.x+x,z:d.position.z};
+   terminal.userData.pin=pin;this.terminalViews.set(id,{id,pin,root:terminal,node,position});terminals.push(id);
+  }
   let led=ball(root,m.light.clone(),0,.38,.25,.055),rotating=null;
   if(d.kind==='source'){
    box(root,m.blue,-.18,.29,0,.12,.45,.3);box(root,m.blue,.18,.29,0,.12,.45,.3);
@@ -93,7 +82,25 @@ export class CityRayScene extends WorkshopScene {
    led=ball(root,m.light.clone(),0,.5,.2,.045);
   }
   cylinder(root,m.brass,0,.1,.33,.08,.025);
-  return {root,led,rotating};
+  return {root,led,rotating,terminals};
+ }
+ connectionPosition(pin){
+  const [partId,side]=String(pin||'').split(':');const owner=this.partOwners.get(partId);if(!owner)return null;
+  const terminal=this.terminalViews.get('city-terminal:'+owner+':'+(side==='1'?'1':'0'));return terminal?.position||null;
+ }
+ clearConnections(){
+  for(const mesh of this.connectionRoot.children.splice(0)){mesh.geometry?.dispose();mesh.material?.dispose();}
+  this.connectionKey='';
+ }
+ renderConnections(){
+  const wires=this.citySession?.board?.wires||[],key=JSON.stringify(wires);if(key===this.connectionKey)return;this.clearConnections();this.connectionKey=key;
+  const colors=['#6e9a8a','#c39a54','#9b6b5c','#71899f','#8c9b6a','#b37955'];
+  wires.forEach((pair,index)=>{const a=this.connectionPosition(pair[0]),b=this.connectionPosition(pair[1]);if(!a||!b)return;const z=(a.z+b.z)/2+(index%2?.22:-.22);const material=this.materials.cable.clone();material.color.set(colors[index%colors.length]);material.emissive=new T.Color(colors[index%colors.length]);material.emissiveIntensity=.18;pipe(this.connectionRoot,material,[[a.x,.32,a.z],[a.x,.32,z],[b.x,.32,z],[b.x,.32,b.z]],.055);});
+ }
+ renderPreview(cable){
+  const start=cable?.start,end=cable?.hovered,key=JSON.stringify([start,end]);if(key===this.previewKey)return;
+  for(const mesh of this.previewRoot.children.splice(0)){mesh.geometry?.dispose();mesh.material?.dispose();}
+  this.previewKey=key;if(!start)return;const a=this.terminalViews.get(start)?.position,b=this.terminalViews.get(end)?.position||{x:this.ray.root.position.x,z:this.ray.root.position.z};if(!a||!b)return;const material=this.materials.brass.clone();material.transparent=true;material.opacity=.72;pipe(this.previewRoot,material,[[a.x,.42,a.z],[a.x,.42,(a.z+b.z)/2],[b.x,.42,(a.z+b.z)/2],[b.x,.42,b.z]],.06);
  }
  project(id,s){
   if(!id.startsWith('city-device:'))return super.project(id,s);
@@ -101,7 +108,7 @@ export class CityRayScene extends WorkshopScene {
   const v=new T.Vector3(d.position.x,.65,d.position.z).project(this.camera);
   return {x:(v.x*.5+.5)*this.width,y:(-.5*v.y+.5)*this.height,visible:Math.abs(v.x)<.96&&Math.abs(v.y)<.92&&v.z>-1&&v.z<1};
  }
- render(s,time,moving,intro,selected,dt){
+ render(s,time,moving,intro,selected,dt,cable=null){
   const previous=this.ray.root.position.clone();
   this.ray.root.position.set(s.player.x,.11,s.player.z);
   const dx=s.player.x-previous.x,dz=s.player.z-previous.z;
@@ -110,13 +117,13 @@ export class CityRayScene extends WorkshopScene {
    this.ray.root.rotation.y+=diff*Math.min(1,dt*14);
   }
   animateRobot(this.ray,time,moving,false);
+  this.renderConnections();this.renderPreview(cable);
+  for(const [id,view] of this.terminalViews){const active=cable?.start===id,hovered=cable?.hovered===id;view.node.material.color.set(active?'#e3bd62':hovered?'#d5a96a':'#b8aa6b');view.node.material.emissiveIntensity=active?1.4:hovered?.8:.18;}
   for(const d of this.devices){
    const view=this.deviceViews.get(d.id),r=deviceReadings(this.citySession,d),on=!!r.on&&!s.tripped;
    view.led.material.emissiveIntensity=on?Math.max(.2,Math.min(2.4,1.8*(r.voltage/12)**2)):0;
    view.led.material.color.set(on?'#efd8a0':'#565e4a');
    if(view.rotating&&on)view.rotating.rotation.z+=dt*5;
-   const branch=this.wireViews.find(w=>w.id===d.id);
-   if(branch)for(const wire of branch.wires){wire.material.color.set(on?branch.accent:branch.dimAccent);wire.material.emissiveIntensity=on?.7:.08;}
   }
   const target=new T.Vector3(T.MathUtils.clamp(s.player.x*.35,-1.6,1.6),0,s.player.z*.18);
   this.cameraTarget.lerp(target,Math.min(1,dt*4));
