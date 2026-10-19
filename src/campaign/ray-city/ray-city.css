@@ -25,3 +25,6 @@
 
 .ray-branch-circuit [data-ray-select],.ray-branch-circuit [data-ray-robot]{cursor:pointer;outline:none}.ray-branch-circuit [data-ray-select]:focus .schematic-body,.ray-branch-circuit [data-ray-robot]:focus .ray-robot-contact{stroke:#b18d3d;stroke-width:3}.ray-robot-contact{fill:#d8e5d7;stroke:#6c8b73;stroke-width:2}.ray-robot-contact.active{fill:#d4e7a9;stroke:#638d4c}.ray-robot-eye{fill:#58776b;stroke:#314b3d;stroke-width:2}.ray-robot-label{font:12px Tahoma;fill:#314b3d}.ray-device-editor .ray-diagram-help::after{content:'  ·  ⌨ M اندازه‌گیری  ·  ←→ انتخاب  ·  Enter اجرا  ·  T آزمایش  ·  Esc خروج';color:#6d7d70}
 @media(max-width:700px){.ray-device-editor .ray-diagram-help::after{content:'  ·  M اندازه‌گیری  ·  ←→ انتخاب  ·  Enter اجرا  ·  T آزمایش';display:block}}
+
+.ray-touch-controls{display:none}
+@media(max-width:700px){.ray-touch-controls{display:flex;justify-content:center;gap:8px;margin:8px auto 0}.ray-touch-controls button{min-width:42px;min-height:40px;padding:6px 12px;font-size:16px}.ray-touch-controls button[data-ray-key="activate"]{min-width:86px;font-size:12px}}

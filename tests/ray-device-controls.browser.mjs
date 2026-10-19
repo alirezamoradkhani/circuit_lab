@@ -20,6 +20,8 @@ try{
    await page.locator('.story-world canvas').waitFor();if(await page.locator('[data-story-action="begin"]').isVisible())await press('[data-story-action="begin"]');
   };
   await openDevice('street-0');
+  assert.equal(await page.locator('.ray-touch-controls').isVisible(),size.width===390,'Mobile gets a real circuit control strip; desktop stays keyboard-first');
+  if(size.width===390){await page.locator('[data-ray-key="meter"]').tap();assert.equal(await page.evaluate(()=>window.__rayCityHost.game.session.tool),'meter');await page.locator('[data-ray-key="next"]').tap();await page.locator('[data-ray-key="activate"]').tap();assert.match(await page.locator('.component-meter').innerText(),/V/);await page.locator('[data-tool="inspect"]').tap();}
   assert.equal(await page.locator('.street-steps li').evaluateAll(items=>items.every(e=>e.getBoundingClientRect().height<50)),true,'Steps have compact natural heights');
   assert.equal(await page.locator('.ray-device-dialog').evaluate(e=>e.scrollWidth>e.clientWidth+1),false,'No horizontal overflow');
   await page.screenshot({path:'.test-artifacts/device-controls/street-'+size.width+'.png'});

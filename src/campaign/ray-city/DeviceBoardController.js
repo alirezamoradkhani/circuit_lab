@@ -49,6 +49,7 @@ export class DeviceBoardController extends CityGame {
    const r=deviceReadings(s,d);editor.querySelector('.component-meter')?.remove();editor.querySelector('.cabinet-panel').insertAdjacentHTML('afterbegin','<div class="component-meter"><strong>'+d.label+'</strong><output dir="ltr">'+r.voltage.toFixed(2)+' V</output><span dir="ltr">I = '+r.current.toFixed(2)+' A</span></div>');
   }
   organizeDevicePanel(editor, s, d);
+  const touch=document.createElement('nav');touch.className='ray-touch-controls';touch.setAttribute('aria-label','کنترل لمسی مدار');touch.innerHTML='<button data-ray-key="previous" aria-label="هدف قبلی">‹</button><button data-ray-key="activate" aria-label="اجرای هدف انتخاب‌شده">انتخاب</button><button data-ray-key="next" aria-label="هدف بعدی">›</button><button data-ray-key="meter" aria-label="فعال‌کردن مولتی‌متر">V</button>';editor.append(touch);
   this.root.scrollTop=scroll;
   this.onChange?.(s);
   if(this.focusKey)this.focusCircuitTarget(this.focusKey);
@@ -58,7 +59,7 @@ export class DeviceBoardController extends CityGame {
  circuitTargets(){const s=this.sessions.get(this.index),ordered=s?.tool==='meter'?[...this.root.querySelectorAll('[data-measure-part],[data-ray-select]')]:[...this.root.querySelectorAll('[data-ray-robot]'),...this.root.querySelectorAll('[data-ray-switch]'),...this.root.querySelectorAll('[data-ray-select]'),...this.root.querySelectorAll('[data-measure-part]'),...this.root.querySelectorAll('[data-pin]')];return ordered.filter((el,i)=>ordered.indexOf(el)===i);}
  focusFirstTarget(){const targets=this.circuitTargets();if(!targets.length)return;this.focusKey=this.focusKeyFor(targets[0]);targets[0].focus({preventScroll:true});}
  focusNext(direction=1){const targets=this.circuitTargets();if(!targets.length)return;const current=document.activeElement,index=targets.indexOf(current),base=index<0?0:index+direction;const next=targets[(base+targets.length)%targets.length];this.focusKey=this.focusKeyFor(next);next.focus({preventScroll:true});}
- activateFocused(){const el=document.activeElement;if(el&&this.root.contains(el)&&this.focusKeyFor(el)){this.focusKey=this.focusKeyFor(el);this.handle({target:el});}}
+ activateFocused(){let el=document.activeElement;if(!this.focusKeyFor(el)&&this.focusKey){this.focusCircuitTarget(this.focusKey);el=this.root.querySelector('[data-ray-robot],[data-ray-switch],[data-ray-select],[data-measure-part],[data-pin]:focus');}if(el&&this.root.contains(el)&&this.focusKeyFor(el)){this.focusKey=this.focusKeyFor(el);this.handle({target:el});}}
  handleKeyboard(e){
   if(!this.active)return;
   const s=this.sessions.get(this.index),code=e.code;
@@ -74,7 +75,9 @@ export class DeviceBoardController extends CityGame {
   if(code==='Enter'||code==='Space'||code==='KeyE'){e.preventDefault();e.stopPropagation();this.activateFocused();}
  }
  handle(e){
-  const s=this.sessions.get(this.index),target=e.target.closest('[data-ray-robot],[data-ray-select],[data-ray-meter]');
+  const s=this.sessions.get(this.index),touchKey=e.target.closest('[data-ray-key]')?.dataset.rayKey;
+  if(touchKey){if(touchKey==='previous'||touchKey==='next'){this.focusNext(touchKey==='previous'?-1:1);}else if(touchKey==='activate'){this.activateFocused();}else if(touchKey==='meter'){s.tool='meter';s.pending=null;this.focusKey=null;this.renderGame();this.focusFirstTarget();}return;}
+  const target=e.target.closest('[data-ray-robot],[data-ray-select],[data-ray-meter]');
   if(target)this.focusKey=this.focusKeyFor(target);
   const robot=e.target.closest('[data-ray-robot]');
   if(robot){if(s.tool==='meter'){s.message='رِی خودش قطعه نیست؛ برای اندازه‌گیری یک قطعه را انتخاب کن.';}else{s.toggleRobotContact();}this.renderGame();return;}
