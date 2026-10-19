@@ -19,7 +19,7 @@ export class CityRayGame extends FrameGame {
   if(this.savedPosition&&Number.isFinite(this.savedPosition.x)&&Number.isFinite(this.savedPosition.z)&&nav.walkable(this.savedPosition,this.state))this.state.player={...this.savedPosition};
   this.movement=new Movement(this,nav);
   this.interactions={tool:'hand',selected:null,object:id=>this.visit(id),nearest:()=>this.nearest()};
-  this.board=new DeviceBoardController(this.hud.deviceDialog.querySelector('.ray-device-editor'),session,this.devices,s=>this.changed(s));
+  this.board=new DeviceBoardController(this.hud.deviceDialog.querySelector('.ray-device-editor'),session,this.devices,s=>this.changed(s),{onClose:()=>this.action('device-close')});
   bindGameInput(this,{isUnlocked:()=>this.state.started&&!this.hud.deviceDialog.open});
   this.root.addEventListener('keydown',e=>{if(this.hud.deviceDialog.open)e.stopPropagation();},{signal:this.abort.signal});
   this.hud.root.querySelector('[data-story-action="begin"]').textContent='ورود به محیط';
@@ -29,7 +29,7 @@ export class CityRayGame extends FrameGame {
   if(this.hud.deviceDialog.open)return;
   if(id==='exit'){if(!this.session.won){this.hud.message(this.session.mission.objective);return;}this.movement.go({x:2.35,z:-3.4},()=>this.options.onNext?.());return;}
   const d=this.devices.find(d=>id==='city-device:'+d.id);if(!d)return;this.interactions.selected=id;
-  this.movement.go(d.walk,()=>{if(!canReachDevice(this.state.player,d))return;this.movement.clear();this.board.setDevice(d);this.hud.openDevice(d);});
+  this.movement.go(d.walk,()=>{if(!canReachDevice(this.state.player,d))return;this.movement.clear();this.board.setDevice(d);this.hud.openDevice(d);this.board.focusFirstTarget();});
  }
  changed(s){this.hud.message(s.won?s.mission.lesson:s.message,s.won?'success':s.tripped?'error':'info');this.state.door=s.won;if(s.won)this.options.onComplete?.(s);}
  save(){try{this.storage?.setItem('circuit-lab.ray-city.position.'+this.session.mission.id,JSON.stringify({started:this.state.started,player:this.state.player}));}catch{}}

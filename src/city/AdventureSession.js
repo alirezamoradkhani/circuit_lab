@@ -13,7 +13,7 @@ export class AdventureSession {
     seedMission(this.board,cityMissions[index]||extraSpecs[this.mission.id]);
     this.tool='inspect';this.focus='person';this.panel=false;this.pending=null;
     this.credits=this.mission.budget;this.spent=0;this.mistakes=0;this.hints=0;
-    this.tripped=false;this.won=false;this.notes=[];this.loads=[true,false,false,true];
+    this.tripped=false;this.won=false;this.notes=[];this.loads=[true,false,false,true];this.robotContact=false;
     this.message=this.mission.request;
     if(this.mission.id==='shop')this.shop=new ShopRepair(this);
     if(this.mission.id==='street')this.street=new StreetRepair(this);
@@ -71,6 +71,12 @@ export class AdventureSession {
   removeWire(index){if(this.won)return;if(this.board.wires[index]){this.board.wires.splice(index,1);this.street?.invalidate();this.pending=null;this.message='سیم برداشته شد؛ حالا می‌توانی مسیر درست را بسازی.';}}
   toggleLoad(index){if(this.won||!appliances[index])return;this.loads[index]=!this.loads[index];this.message=`توان انتخاب‌شده: ${this.power} از ۱۸ وات.`;}
   toggleSwitch(){if(this.won)return;const p=this.board.parts.find(p=>p.type==='switch');p.closed=!p.closed;this.street?.invalidate();this.message=p.closed?'کلید بسته شد.':'کلید باز شد؛ می‌توانی اثر آن را با مولتی‌متر بررسی کنی.';}
+  toggleRobotContact(){
+    if(this.won||this.mission.id!=='gate')return;
+    const a='p3:1',b='p1:1',index=this.board.wires.findIndex(w=>w.includes(a)&&w.includes(b));
+    if(index>=0){this.board.wires.splice(index,1);this.robotContact=false;this.message='رِی از دو پایانه جدا شد؛ مسیر برگشت دوباره قطع است.';return;}
+    this.board.connect(a,b);this.robotContact=true;this.message='رِی روی دو پایانه قرار گرفت و مثل یک پل رسانا مسیر برگشت را بست.';
+  }
   hint(){if(this.won)return;this.message=this.mission.hints[Math.min(this.hints,2)];this.hints=Math.min(this.hints+1,3);}
   resetFuse(){this.tripped=false;this.message='محافظ بازنشانی شد. پیش از آزمایش دوباره، علت قطع‌شدن را رفع کن.';}
   test(){

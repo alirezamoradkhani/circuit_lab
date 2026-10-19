@@ -4,11 +4,12 @@ import {deviceCircuit} from './DeviceCircuit.js';
 import {deviceReadings} from './devices.js';
 import {organizeDevicePanel} from './DevicePanelLayout.js';
 export class DeviceBoardController extends CityGame {
- constructor(root,session,devices,onChange){super(root);this.index=session.index;this.sessions.set(this.index,session);this.devices=devices;this.onChange=onChange;this.root.innerHTML='<div data-stage></div>';this.active=false;
-  this.dragAbort=new AbortController();const options={signal:this.dragAbort.signal};
-  root.addEventListener('pointerdown',e=>{const s=this.sessions.get(this.index),pin=e.target.closest('[data-pin]');if(!this.active||!pin||s.street||s.tool==='meter'||s.won||e.button!==0)return;this.wireDrag={pin:pin.dataset.pin,x:e.clientX,y:e.clientY};pin.setPointerCapture(e.pointerId);},options);
-  root.addEventListener('pointerup',e=>{const drag=this.wireDrag;this.wireDrag=null;if(!drag||Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;const end=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-pin]');if(!end)return;const s=this.sessions.get(this.index);s.pending=null;s.pin(drag.pin);s.pin(end.dataset.pin);this.renderGame();},options);
-  root.addEventListener('pointercancel',()=>this.wireDrag=null,options);
+ constructor(root,session,devices,onChange,options={}){super(root);this.index=session.index;this.sessions.set(this.index,session);this.devices=devices;this.onChange=onChange;this.onClose=options.onClose;this.focusKey=null;this.root.innerHTML='<div data-stage></div>';this.active=false;
+  this.dragAbort=new AbortController();const listenerOptions={signal:this.dragAbort.signal};
+  root.addEventListener('pointerdown',e=>{const s=this.sessions.get(this.index),pin=e.target.closest('[data-pin]');if(!this.active||!pin||s.street||s.tool==='meter'||s.won||e.button!==0)return;this.wireDrag={pin:pin.dataset.pin,x:e.clientX,y:e.clientY};pin.setPointerCapture(e.pointerId);},listenerOptions);
+  root.addEventListener('pointerup',e=>{const drag=this.wireDrag;this.wireDrag=null;if(!drag||Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;const end=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-pin]');if(!end)return;const s=this.sessions.get(this.index);s.pending=null;s.pin(drag.pin);s.pin(end.dataset.pin);this.renderGame();},listenerOptions);
+  root.addEventListener('pointercancel',()=>this.wireDrag=null,listenerOptions);
+  root.addEventListener('keydown',e=>this.handleKeyboard(e),{signal:this.dragAbort.signal,capture:true});
  }
  renderMap(){}
  setDevice(device){this.device=device;const s=this.sessions.get(this.index);s.pending=null;s.meteredPart=null;s.meteredWire=null;s.messageTarget=null;s.panel=true;s.circuitExpanded=false;this.active=true;this.renderGame();}
@@ -50,9 +51,36 @@ export class DeviceBoardController extends CityGame {
   organizeDevicePanel(editor, s, d);
   this.root.scrollTop=scroll;
   this.onChange?.(s);
+  if(this.focusKey)this.focusCircuitTarget(this.focusKey);
+ }
+ focusKeyFor(el){if(!el)return null;const d=el.dataset;return d.rayRobot?'robot:'+d.rayRobot:d.raySwitch?'switch:'+d.raySwitch:d.raySelect?'select:'+d.raySelect:d.measurePart?'measure:'+d.measurePart:d.pin?'pin:'+d.pin:null;}
+ focusCircuitTarget(key=this.focusKey){if(!key)return;const parts=key.split(':'),kind=parts.shift(),value=parts.join(':');const selectors={robot:'[data-ray-robot="'+value+'"]',switch:'[data-ray-switch="'+value+'"]',select:'[data-ray-select="'+value+'"]',measure:'[data-measure-part="'+value+'"]',pin:'[data-pin="'+value+'"]'};this.root.querySelector(selectors[kind])?.focus({preventScroll:true});}
+ circuitTargets(){const s=this.sessions.get(this.index),ordered=s?.tool==='meter'?[...this.root.querySelectorAll('[data-measure-part],[data-ray-select]')]:[...this.root.querySelectorAll('[data-ray-robot]'),...this.root.querySelectorAll('[data-ray-switch]'),...this.root.querySelectorAll('[data-ray-select]'),...this.root.querySelectorAll('[data-measure-part]'),...this.root.querySelectorAll('[data-pin]')];return ordered.filter((el,i)=>ordered.indexOf(el)===i);}
+ focusFirstTarget(){const targets=this.circuitTargets();if(!targets.length)return;this.focusKey=this.focusKeyFor(targets[0]);targets[0].focus({preventScroll:true});}
+ focusNext(direction=1){const targets=this.circuitTargets();if(!targets.length)return;const current=document.activeElement,index=targets.indexOf(current),base=index<0?0:index+direction;const next=targets[(base+targets.length)%targets.length];this.focusKey=this.focusKeyFor(next);next.focus({preventScroll:true});}
+ activateFocused(){const el=document.activeElement;if(el&&this.root.contains(el)&&this.focusKeyFor(el)){this.focusKey=this.focusKeyFor(el);this.handle({target:el});}}
+ handleKeyboard(e){
+  if(!this.active)return;
+  const s=this.sessions.get(this.index),code=e.code;
+  if(code==='Escape'){e.preventDefault();e.stopPropagation();this.onClose?.();return;}
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(code)){e.preventDefault();e.stopPropagation();this.focusNext(code==='ArrowLeft'||code==='ArrowUp'?-1:1);return;}
+  if(e.repeat)return;
+  if(code==='KeyM'){e.preventDefault();e.stopPropagation();s.tool='meter';s.pending=null;this.focusKey=null;this.renderGame();this.focusNext(1);return;}
+  if(code==='KeyI'){e.preventDefault();e.stopPropagation();s.tool='inspect';s.pending=null;this.renderGame();this.focusNext(1);return;}
+  if(code==='KeyB'&&this.device?.id==='guard-lamp'){e.preventDefault();e.stopPropagation();if(s.tool!=='meter'){s.toggleRobotContact();this.renderGame();}return;}
+  if(code==='KeyT'){e.preventDefault();e.stopPropagation();s.test();this.onChange?.(s);this.renderGame();return;}
+  if(code==='KeyH'){e.preventDefault();e.stopPropagation();s.hint();this.renderGame();return;}
+  if(code==='KeyR'&&s.tripped){e.preventDefault();e.stopPropagation();s.resetFuse();this.renderGame();return;}
+  if(code==='Enter'||code==='Space'||code==='KeyE'){e.preventDefault();e.stopPropagation();this.activateFocused();}
  }
  handle(e){
-  if(e.target.closest('[data-ray-meter]')){const s=this.sessions.get(this.index);s.tool='meter';this.renderGame();return;}
+  const s=this.sessions.get(this.index),target=e.target.closest('[data-ray-robot],[data-ray-select],[data-ray-meter]');
+  if(target)this.focusKey=this.focusKeyFor(target);
+  const robot=e.target.closest('[data-ray-robot]');
+  if(robot){if(s.tool==='meter'){s.message='رِی خودش قطعه نیست؛ برای اندازه‌گیری یک قطعه را انتخاب کن.';}else{s.toggleRobotContact();}this.renderGame();return;}
+  const select=e.target.closest('[data-ray-select]');
+  if(select){s.tool='meter';s.meteredPart=select.dataset.raySelect;s.meteredWire=null;this.renderGame();return;}
+  if(e.target.closest('[data-ray-meter]')){s.tool='meter';s.meteredPart=this.device?.loadIndex!==undefined?null:this.device?.partIds?.[0]||null;this.renderGame();return;}
   const action=e.target.closest('[data-action]')?.dataset.action;
   if(['restart','map','next','close-circuit','close-panel'].includes(action))return;
   const switchId=e.target.closest('[data-ray-switch]')?.dataset.raySwitch;
