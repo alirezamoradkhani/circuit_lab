@@ -28,3 +28,24 @@
 
 .ray-touch-controls{display:none}
 @media(max-width:700px){.ray-touch-controls{display:flex;justify-content:center;gap:8px;margin:8px auto 0}.ray-touch-controls button{min-width:42px;min-height:40px;padding:6px 12px;font-size:16px}.ray-touch-controls button[data-ray-key="activate"]{min-width:86px;font-size:12px}}
+
+
+/* City mode: first action and keyboard controls stay visible without covering the board. */
+.ray-city-stage .story-dock{bottom:40px}
+.ray-city-stage .story-context{display:block;left:auto;right:18px;transform:none;bottom:112px;z-index:7}
+.ray-city-stage .story-context[hidden]{display:none!important}
+.ray-city-stage .story-hotspots button span{display:block;top:calc(100% + 4px);padding:3px 6px;font-size:10px;background:#e3d5b3e8;color:#34332d;border:1px solid #c3ae78;box-shadow:0 2px 6px #17251940}
+.ray-city-stage .story-context button{min-height:36px;padding:7px 12px;font-size:12px;background:#e3d5b3f2;border-color:#d3ba7a}
+.ray-quick-start{position:absolute;top:122px;right:18px;z-index:6;display:flex;flex-direction:column;gap:4px;max-width:255px;padding:10px 13px;border:1px solid #b8c79b99;border-radius:10px;background:#23382edb;color:#f1e7c5;box-shadow:0 8px 22px #15221955;direction:rtl;text-align:right;font:12px/1.7 Tahoma;pointer-events:none}
+.ray-quick-start strong{font-size:14px;color:#e4c77e}
+.ray-quick-start span{display:block}
+.ray-quick-start kbd,.ray-keyboard-legend kbd{padding:1px 5px;border:1px solid #d7c98e99;border-radius:4px;background:#394c3d;color:#f7edc9;font:11px monospace}
+.ray-keyboard-legend{position:absolute;left:50%;bottom:5px;z-index:6;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;transform:translateX(-50%);width:min(92%,760px);padding:4px 8px;border:1px solid #b3bd936b;border-radius:8px;background:#1e2d25c7;color:#d7ddbd;direction:rtl;text-align:center;font:10px/1.6 Tahoma;pointer-events:none}
+.ray-keyboard-legend span{white-space:nowrap}
+@media(max-width:700px){
+ .ray-city-stage .story-dock{bottom:14px}
+ .ray-city-stage .story-context{right:8px;bottom:86px}
+ .ray-quick-start{top:101px;right:8px;left:8px;max-width:none;padding:7px 10px;font-size:11px}
+ .ray-quick-start strong{font-size:12px}
+ .ray-keyboard-legend{display:none}
+}

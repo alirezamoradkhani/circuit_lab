@@ -3,7 +3,7 @@ import {Movement} from '../engine/Movement.js';
 import {createNavigation} from '../engine/createNavigation.js';
 import {GameAudio} from '../engine/GameAudio.js';
 import {bindGameInput} from '../engine/GameInput.js';
-import {ROOM,STATIC_OBSTACLES} from '../workshop/layout.js';
+import {ROOM} from '../workshop/layout.js';
 import {freshState} from '../workshop/state.js';
 import {CityRayScene} from './CityRayScene.js';
 import {CityRayHUD} from './CityRayHUD.js';
@@ -15,7 +15,7 @@ export class CityRayGame extends FrameGame {
   this.state={...freshState(),player:{x:0,z:3.45},cart:1,reel:true,door:session.won};
   try{this.storage=window.localStorage;const position=JSON.parse(this.storage.getItem('circuit-lab.ray-city.position.'+session.mission.id));if(position?.started)this.state.started=true;this.savedPosition=position?.player;}catch{}
   this.hud=new CityRayHUD(root,a=>this.action(a),session,this.devices);this.scene=new CityRayScene(this.hud.world,session,this.devices);this.audio=new GameAudio();
-  const nav=createNavigation({bounds:ROOM,obstacles:()=>[...STATIC_OBSTACLES,...this.devices.map(d=>({...d.position,w:1,d:.7}))],blocked:()=>false,tetherAllows:()=>true});
+  const nav=createNavigation({bounds:ROOM,obstacles:()=>this.devices.map(d=>({...d.position,w:.65,d:.65})),blocked:()=>false,tetherAllows:()=>true});
   if(this.savedPosition&&Number.isFinite(this.savedPosition.x)&&Number.isFinite(this.savedPosition.z)&&nav.walkable(this.savedPosition,this.state))this.state.player={...this.savedPosition};
   this.movement=new Movement(this,nav);
   this.interactions={tool:'hand',selected:null,object:id=>this.visit(id),nearest:()=>this.nearest()};
