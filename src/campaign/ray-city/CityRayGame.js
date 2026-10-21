@@ -3,82 +3,65 @@ import {Movement} from '../engine/Movement.js';
 import {createNavigation} from '../engine/createNavigation.js';
 import {GameAudio} from '../engine/GameAudio.js';
 import {bindGameInput} from '../engine/GameInput.js';
-import {ROOM} from '../workshop/layout.js';
-import {freshState} from '../workshop/state.js';
 import {CityRayScene} from './CityRayScene.js';
 import {CityRayHUD} from './CityRayHUD.js';
-import {DeviceBoardController} from './DeviceBoardController.js';
-import {missionDevices,canReachDevice,deviceReadings} from './devices.js';
+import {WorldCircuit} from './WorldCircuit.js';
+import {missionDevices} from './devices.js';
 export class CityRayGame extends FrameGame {
  constructor(root,session,options={}){
-  super(root);this.session=session;this.options=options;this.devices=missionDevices(session);this.time=0;this.intro=9;
-  this.state={...freshState(),player:{x:0,z:3.45},cart:1,reel:true,door:session.won};
-  try{this.storage=window.localStorage;const position=JSON.parse(this.storage.getItem('circuit-lab.ray-city.position.'+session.mission.id));if(position?.started)this.state.started=true;this.savedPosition=position?.player;}catch{}
-  this.hud=new CityRayHUD(root,a=>this.action(a),session,this.devices);this.scene=new CityRayScene(this.hud.world,session,this.devices);this.audio=new GameAudio();
-  const nav=createNavigation({bounds:ROOM,obstacles:()=>this.devices.map(d=>({...d.position,w:.65,d:.65})),blocked:()=>false,tetherAllows:()=>true});
-  if(this.savedPosition&&Number.isFinite(this.savedPosition.x)&&Number.isFinite(this.savedPosition.z)&&nav.walkable(this.savedPosition,this.state))this.state.player={...this.savedPosition};
-  this.movement=new Movement(this,nav);
-  this.worldCable={active:false,start:null,hovered:null};
-  this.interactions={tool:'hand',selected:null,object:id=>this.interact(id),nearest:()=>this.nearest()};
-  this.board=new DeviceBoardController(this.hud.deviceDialog.querySelector('.ray-device-editor'),session,this.devices,s=>this.changed(s),{onClose:()=>this.action('device-close')});
-  bindGameInput(this,{isUnlocked:()=>this.state.started&&!this.hud.deviceDialog.open});
-  this.root.addEventListener('keydown',e=>{if(this.hud.deviceDialog.open)e.stopPropagation();},{signal:this.abort.signal});
-  this.hud.root.querySelector('[data-story-action="begin"]').textContent='ورود به محیط';
+  super(root);this.session=session;this.options=options;this.devices=missionDevices(session);this.time=0;this.world=new WorldCircuit(session,this.devices);
+  this.state={started:false,player:{x:0,z:3.05}};this.movementAxes='screen';this.audio=new GameAudio();
+  this.hud=new CityRayHUD(root,a=>this.action(a),session);this.scene=new CityRayScene(this.hud.world,this.world);
+  const nav=createNavigation({bounds:{minX:-5.55,maxX:5.55,minZ:-3.45,maxZ:3.45},obstacles:()=>this.world.parts.filter(d=>session.board.parts.includes(d.part)).map(d=>({...d.position,w:1.2,d:.8})),radius:.19});this.movement=new Movement(this,nav);
+  try{this.storage=window.localStorage;const saved=JSON.parse(this.storage.getItem('circuit-lab.ray-city.world.v2.'+session.mission.id));if(saved?.started){this.state.started=true;if(nav.walkable(saved.player,this.state))this.state.player=saved.player;}}catch{}
+  this.interactions={tool:'hand',selected:null,object:id=>this.selectObject(id),nearest:()=>this.world.selected};
+  bindGameInput(this,{isUnlocked:()=>this.state.started&&!this.world.choice});
+  window.addEventListener('keydown',e=>this.key(e),{capture:true,signal:this.abort.signal});
  }
- nearest(){let best=1.4,id=null;for(const d of this.devices){const delta=Math.hypot(this.state.player.x-d.walk.x,this.state.player.z-d.walk.z);if(delta<best){best=delta;id='city-device:'+d.id;}}return id;}
- supportsWorldWiring(){return ['gate','street','station'].includes(this.session.mission.id);}
- nearestTerminal(){let best=1.05,id=null;for(const [terminalId,view] of this.scene.terminalViews){const delta=Math.hypot(this.state.player.x-view.position.x,this.state.player.z-view.position.z);if(delta<best){best=delta;id=terminalId;}}return id;}
- interact(id){if(id?.startsWith('city-terminal:')){this.selectWorldTerminal(id);return;}this.visit(id);}
- toggleWorldCable(){
-  if(!this.supportsWorldWiring()){this.hud.message('این مأموریت با کلیدهای خود قطعات حل می‌شود؛ اتصال مستقیم برای این مرحله فعال نیست.');return;}
-  this.worldCable.active=!this.worldCable.active;this.worldCable.start=null;this.worldCable.hovered=null;
-  this.hud.message(this.worldCable.active?'حالت کابل فعال شد؛ کنار یک ترمینال بایست و E بزن. برای لغو دوباره C را بزن.':'حالت کابل لغو شد.');
+ key(e){
+  if(!this.active||this.hud.dialog.open||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
+  if(!this.state.started){if(e.code==='Enter'){e.preventDefault();e.stopPropagation();this.action('begin');}return;}
+  const commands={KeyE:'interact',Enter:'interact',Space:'interact',KeyQ:'cycle',KeyX:'cut',Delete:'cut',KeyC:'terminal',KeyM:'meter',KeyH:'hint',KeyF:'test',KeyT:'test',KeyR:'recover',KeyN:'next',Escape:'cancel',KeyL:'levels',KeyV:'view'};
+  if(this.world.choice&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyA','KeyD'].includes(e.code)){e.preventDefault();e.stopPropagation();this.action(['ArrowLeft','ArrowUp','KeyA'].includes(e.code)?'option-prev':'option-next');return;}
+  if(commands[e.code]){e.preventDefault();e.stopPropagation();if(!e.repeat)this.action(commands[e.code]);}
  }
- selectWorldTerminal(id){
-  if(!this.worldCable.active)this.toggleWorldCable();if(!this.worldCable.active)return;
-  const terminal=this.scene.terminalViews.get(id);if(!terminal)return;
-  if(!this.worldCable.start){this.worldCable.start=id;this.worldCable.hovered=id;this.hud.message('ترمینال اول انتخاب شد؛ به ترمینال مقصد برو و E بزن.');return;}
-  if(this.worldCable.start===id){this.worldCable.start=null;this.worldCable.hovered=null;this.hud.message('انتخاب ترمینال لغو شد.');return;}
-  const start=this.scene.terminalViews.get(this.worldCable.start);if(!start){this.worldCable.start=null;return;}
-  const existing=this.session.board.wires.findIndex(w=>w.includes(start.pin)&&w.includes(terminal.pin));
-  if(existing>=0)this.session.removeWire(existing);else{this.session.pin(start.pin);this.session.pin(terminal.pin);}
-  this.worldCable.start=null;this.worldCable.hovered=null;this.changed(this.session);this.save();
+ selectObject(id){const target=this.world.targets().find(t=>t.id===id);if(!target)return;if(this.world.range(target,this.state.player)>1.25){this.hud.message('رِی را با کلیدهای حرکت کنار همین قطعه یا مسیر ببر.');return;}this.world.selected=id;this.world.lockAt={...this.state.player};this.hud.message(target.label+' انتخاب شد؛ E تعامل، X قطع مسیر، M اندازه‌گیری.');}
+ changed(){this.workUntil=this.time+.55;this.audio.play(this.session.won?'complete':'plug');this.hud.message(this.session.message,this.session.won?'success':this.session.tripped?'error':'info');if(this.session.won)this.options.onComplete?.(this.session);this.save();}
+ openOptions(d){const options=this.world.options(d);if(!options.length){this.hud.message(this.world.measure());return;}this.movement.clear();this.world.choice={device:d,options,index:0};}
+ action(a){
+  if(!this.active)return;this.audio.unlock();const w=this.world;
+  if(a==='begin'){this.state.started=true;this.hud.message(w.canRewire?'رِی داخل مدار است. به مسیرها نگاه کن؛ کنار پایانه E، کنار قطعه E، Q تغییر انتخاب.':'کنار قطعه E بزن تا تنظیمش کنی؛ M اندازه‌گیری و F آزمایش همین مدار است. مسیرهای این مرحله ثابت‌اند.');this.scene.renderer.domElement.focus({preventScroll:true});this.save();return;}
+  if(a==='levels'){this.movement.clear();this.hud.showDialog(this.options.menu());return;}
+  if(a.startsWith('mission:')){this.options.onMission?.(Number(a.split(':')[1]));return;}
+  if(a==='close'){this.hud.closeDialog();return;}
+  if(a==='next'){if(this.session.won)this.options.onNext?.();return;}
+  if(a==='view'){this.scene.toggleOverview();return;}
+  if(a==='sound'){this.audio.toggle();return;}
+  if(a==='restart'){this.options.onRestart?.();return;}
+  if(a==='reset'){this.hud.showDialog('<h2>شروع دوبارهٔ مأموریت؟</h2><button data-story-action="restart">شروع دوباره</button>');return;}
+  if(a==='recover'){if(this.session.tripped){this.session.resetFuse();this.changed();}return;}
+  if(a==='cancel'||a==='hand'){w.choice=null;w.start=null;this.hud.message('ابزار رها شد؛ حرکت آزاد.');return;}
+  if(a==='option-prev'||a==='option-next'){const c=w.choice;if(c)c.index=(c.index+(a==='option-prev'?-1:1)+c.options.length)%c.options.length;return;}
+  if(a==='hint'||a==='help'){this.hud.message(w.hint(),'hint');return;}
+  if(a==='test'){if(this.session.board.parts.some(p=>p.type==='switch'&&!p.closed)){this.hud.message('کلید اصلی باز است؛ برای آزمون تعمیر، مدار باید تغذیه شود.');return;}this.session.test();this.changed();return;}
+  if(a==='cycle'){w.selectNearby(this.state.player,true);return;}
+  if(a==='cut'){w.choice=null;const before=this.session.board.wires.length;this.hud.message(w.disconnect());if(this.session.board.wires.length<before){this.audio.play('unplug');this.workUntil=this.time+.55;}this.save();return;}
+  if(a==='terminal'||a==='cable'){w.selectNearby(this.state.player,false,'pin');this.hud.message(w.target()?.type==='pin'?'پایانه انتخاب شد؛ E برداشتن / اتصال.':'کنار یک پایانهٔ لحیم بایست.');return;}
+  if(a==='meter'){this.hud.message(w.measure());return;}
+  if(a==='interact'){
+   if(w.choice){const c=w.choice;c.options[c.index].run();w.choice=null;this.changed();return;}
+   const t=w.selectNearby(this.state.player);if(!t){this.hud.message('نزدیک‌تر برو؛ وقتی محدودهٔ طلایی دیده شد E بزن.');return;}
+   if(t.type==='pin'){const before=this.session.board.wires.length;this.hud.message(w.connect(t.pin));if(this.session.board.wires.length>before){this.audio.play('plug');this.workUntil=this.time+.55;}this.save();}
+   else if(t.type==='wire')this.hud.message('مسیر انتخاب شد؛ X برای قطع، Q انتخاب قطعه یا پایانهٔ کناری.');
+   else this.openOptions(t.device);
+  }
  }
- visit(id){
-  if(this.hud.deviceDialog.open)return;
-  if(id==='exit'){if(!this.session.won){this.hud.message(this.session.mission.objective);return;}this.movement.go({x:2.35,z:-3.4},()=>this.options.onNext?.());return;}
-  const d=this.devices.find(d=>id==='city-device:'+d.id);if(!d)return;this.interactions.selected=id;
-  this.movement.go(d.walk,()=>{if(!canReachDevice(this.state.player,d))return;this.movement.clear();this.board.setDevice(d);this.hud.openDevice(d);this.board.focusFirstTarget();});
- }
- changed(s){this.hud.message(s.won?s.mission.lesson:s.message,s.won?'success':s.tripped?'error':'info');this.state.door=s.won;if(s.won)this.options.onComplete?.(s);}
- save(){try{this.storage?.setItem('circuit-lab.ray-city.position.'+this.session.mission.id,JSON.stringify({started:this.state.started,player:this.state.player}));}catch{}}
- setActive(active){this.movement.clear();if(active){this.scene.resize();this.startFrames();}else{this.stopFrames();this.board.close();this.hud.closeDevice();this.hud.closeDialog();this.audio.suspend();this.save();}}
- action(action){
-  if(!this.active)return;this.audio.unlock();
-  if(action==='begin'){this.state.started=true;this.save();return;}
-  if(action==='device-close'){this.board.close();this.hud.closeDevice();this.interactions.selected=null;return;}
-  if(action==='levels'){this.hud.showDialog('help',this.state,true);this.root.querySelector('[data-dialog-content]').innerHTML=this.options.menu();return;}
-  if(action.startsWith('mission:')){this.options.onMission?.(Number(action.split(':')[1]));return;}
-  if(action==='next'){if(this.session.won)this.options.onNext?.();return;}
-  if(action==='close'){this.hud.closeDialog();return;}
-  if(action==='view'){this.scene.toggleOverview();return;}
-  if(action==='sound'){this.audio.toggle();return;}
-  if(action==='restart'){this.options.onRestart?.();return;}
-  if(action==='reset'){this.hud.showDialog('help',this.state,true);this.root.querySelector('[data-dialog-content]').innerHTML='<h2>شروع دوباره همین مأموریت؟</h2><button data-story-action="restart">شروع دوباره</button>';return;}
-  if(action==='hint'){this.session.hint();this.hud.message(this.session.message);if(this.hud.deviceDialog.open)this.board.renderGame();return;}
-  if(action==='test'){this.session.test();this.changed(this.session);return;}
-  if(action==='help'){this.hud.showDialog('help',this.state,true);return;}
-  if(action==='interact'){if(this.worldCable.active){const id=this.nearestTerminal();if(id)this.selectWorldTerminal(id);return;}const id=this.nearest();if(id)this.visit(id);return;}
-  if(action==='cable'){this.toggleWorldCable();return;}
-  if(action==='hand'){if(this.worldCable.active)this.toggleWorldCable();return;}
-  if(['circuit','meter','bag','battery'].includes(action)){const id=this.interactions.selected||this.nearest();if(id)this.visit(id);return;}
- }
+ save(){try{this.storage?.setItem('circuit-lab.ray-city.world.v2.'+this.session.mission.id,JSON.stringify(this.state));}catch{}}
+ setActive(active){this.movement.clear();if(active){this.scene.resize();this.startFrames();}else{this.stopFrames();this.hud.closeDialog();this.audio.suspend();this.save();}}
  step(dt){
-  this.worldCable.hovered=this.worldCable.active?this.nearestTerminal():null;
-  if(this.state.started&&!this.focusPaused&&!this.hud.dialog.open&&!this.hud.deviceDialog.open){this.time+=dt;this.movement.update(dt);}
-  this.state.door=this.session.won;
-  this.scene.render(this.state,this.time,this.movement.moving,9,this.interactions.selected,dt,this.worldCable);
-  this.hud.update(this.state,this.scene,'hand',this.interactions.selected,this.nearest(),9,dt);
+  if(this.state.started&&!this.focusPaused&&!this.hud.dialog.open&&!this.world.choice){this.time+=dt;this.movement.update(dt);this.world.selectNearby(this.state.player);}
+  this.state.working=this.time<(this.workUntil||0);
+  this.scene.render(this.state,this.time,this.movement.moving,9,this.world.selected,dt);this.hud.update(this.state,this.scene,this.world);
  }
- dispose(){this.setActive(false);super.dispose();this.board.dispose();this.scene.dispose();this.audio.dispose();this.hud.dispose();}
+ dispose(){this.setActive(false);super.dispose();this.scene.dispose();this.audio.dispose();this.hud.dispose();}
 }

@@ -1,26 +1,30 @@
-import {SceneHUD} from '../ui/SceneHUD.js';
-export class CityRayHUD extends SceneHUD {
- constructor(root,onAction,session,devices){
-  const names=Object.fromEntries(devices.map(d=>['city-device:'+d.id,d.label]));names.exit='خروج به مأموریت بعد';
-  super(root,onAction,{names,pins:[],labels:{chapter:'شهر روشن / مأموریت '+(session.index+1).toLocaleString('fa-IR'),title:session.mission.title,introChapter:'گزارش خرابی',introTitle:session.mission.title,introText:session.mission.request},
-   available:id=>id!=='exit'||session.won,goal:()=>session.won?'exit':null,objective:()=>session.won?session.mission.success:session.mission.objective,
-   canUnplug:()=>false,interactionLabel:(s,id)=>id==='exit'?'مأموریت بعد':'باز کردن مدار '+(names[id]||'دستگاه'),visible:()=>true,
-   dialogContent:(kind)=>kind==='help'?'<h2>'+session.mission.title+'</h2><p>'+session.mission.request+'</p><p>'+session.mission.objective+'</p><p>کنار هر دستگاه برو و مدار خودش را باز کن. پایانه‌ها و سیم‌ها متعلق به همان شبکه مشترک‌اند. مدار دستگاه دیگر را از محل خودش باز کن.</p><button data-story-action="hint">سرنخ مرحله</button>':'',
-  });
-  this.stage.classList.add('ray-city-stage');this.root.querySelector('.story-battery').hidden=true;
-  const levels=document.createElement('button');levels.dataset.storyAction='levels';levels.setAttribute('aria-label','مأموریت‌ها');levels.textContent='☷';root.querySelector('.story-small-tools').prepend(levels);
-  levels.remove();
-  root.querySelector('.story-dock').innerHTML='<button data-story-action="hand" aria-pressed="true">'+root.querySelector('.story-context svg').outerHTML+'<span>تعامل</span></button><button data-story-action="cable">↔<span>اتصال کابل</span></button><button data-story-action="levels">☷<span>مأموریت‌ها</span></button><button data-story-action="hint">?<span>سرنخ</span></button><button data-story-action="test">ϟ<span>آزمایش شبکه</span></button>';
-  const status=document.createElement('p');status.className='ray-field-message';status.setAttribute('role','status');status.setAttribute('aria-live','polite');this.stage.append(status);this.fieldMessage=status;
-  const quick=document.createElement('aside');quick.className='ray-quick-start';quick.innerHTML='<strong>از اینجا شروع کن</strong><span>به یکی از قطعه‌های مدار نزدیک شو</span><span><kbd>E</kbd> یا <kbd>Enter</kbd> را بزن تا مدار همان قطعه باز شود</span><span><kbd>C</kbd> حالت کابل سه‌بعدی را روشن می‌کند</span>';quick.hidden=true;this.stage.append(quick);this.quickStart=quick;this.openedDevice=false;
-  const keys=document.createElement('div');keys.className='ray-keyboard-legend';keys.setAttribute('aria-label','راهنمای کنترل بازی');keys.innerHTML='<span><kbd>W A S D</kbd> حرکت</span><span><kbd>E / Enter</kbd> تعامل یا ترمینال</span><span><kbd>C</kbd> حالت کابل</span><span><kbd>H</kbd> راهنمای مرحله</span><span><kbd>T</kbd> آزمایش مدار</span><span><kbd>Esc</kbd> لغو کابل / بستن مدار';this.stage.append(keys);this.keyboardLegend=keys;
-  const dialog=document.createElement('dialog');dialog.className='ray-device-dialog';dialog.setAttribute('aria-label','مدار دستگاه');dialog.innerHTML='<div class="ray-device-header"><div><small>مدار دستگاه</small><h2></h2></div><button data-story-action="device-close" aria-label="برگشت به محیط">×</button></div><div id="cityMode" class="ray-device-editor"></div>';
-  this.stage.append(dialog);this.deviceDialog=dialog;
-  dialog.addEventListener('cancel',e=>{e.preventDefault();onAction('device-close');});
+import {icon} from '../ui/icons.js';
+export class CityRayHUD {
+ constructor(root,onAction,session){
+  this.root=root;this.session=session;this.onAction=onAction;
+  const button=(a,key,label)=>'<button data-story-action="'+a+'"><kbd>'+key+'</kbd><span>'+label+'</span></button>';
+  root.innerHTML='<div class="story-stage ray-city-stage ray-world-stage"><div class="story-world"></div><div class="story-vignette"></div><header class="ray-world-header"><div><small>رِی / تعمیر درون مدار · مأموریت '+(session.index+1).toLocaleString('fa-IR')+'</small><h1></h1><p data-objective></p></div><nav aria-label="منوی بازی">'+button('levels','L','مأموریت‌ها')+button('view','V','نمای کامل')+button('sound','♫','صدا')+button('reset','↶','از نو')+'</nav></header><aside class="ray-world-note"><small>پلاک مأموریت</small><p></p></aside><div class="ray-world-status" role="status" aria-live="polite" hidden></div><div class="ray-world-target"><small data-target-kind></small><strong data-target-label></strong><p data-context></p></div><div class="ray-world-choice" hidden><strong data-choice-title></strong><div><button data-story-action="option-prev" aria-label="گزینه قبل">‹</button><output></output><button data-story-action="option-next" aria-label="گزینه بعد">›</button></div><p>← → انتخاب · Enter اجرا · Esc بستن</p><button data-story-action="interact">اجرا</button></div><div class="ray-world-hint" hidden></div><footer class="ray-world-footer"><nav aria-label="کنترل‌های بازی">'+button('interact','E','تعامل')+button('cycle','Q','انتخاب بعدی')+button('terminal','C','پایانه')+button('cut','X','قطع مسیر')+button('meter','M','اندازه‌گیری')+button('hint','H','سرنخ')+button('test','F','آزمایش')+button('recover','R','محافظ')+button('cancel','Esc','رهاکردن')+button('next','N','مرحلهٔ بعد')+'</nav><p class="ray-world-keyboard"><kbd>W A S D</kbd> یا <kbd>↑ ↓ ← →</kbd> حرکت رِی · برای انتخاب نزدیک‌تر شو؛ کلیدها روی هدف روشن‌شده اثر می‌کنند.</p></footer><button class="story-joystick" aria-label="حرکت ربات"><i></i></button><div class="ray-world-intro"><small>گزارش مأموریت</small><h2></h2><p></p><div class="ray-intro-path"><span>۱ · پیدا کردن مسیر</span><span>۲ · بررسی با M</span><span>۳ · تعمیر با E</span></div><p>روی زمین حرکت کن. مسیر مسی، خود اتصال برق است. کنار پایانه E بزن؛ سر دوم را هم با E وصل کن. Q انتخاب را عوض می‌کند و X مسیر انتخاب‌شده را برمی‌دارد.</p><button data-story-action="begin">ورود به مدار · Enter</button></div><dialog class="story-dialog"><button class="story-dialog-close" data-story-action="close" aria-label="بستن">'+icon('close')+'</button><div data-dialog-content></div></dialog></div>';
+  this.stage=root.querySelector('.story-stage');this.world=root.querySelector('.story-world');this.dialog=root.querySelector('dialog');
+  root.querySelector('h1').textContent=session.mission.title;root.querySelector('[data-objective]').textContent=session.mission.objective;
+  root.querySelector('.ray-world-note p').textContent=session.mission.plate;root.querySelector('.ray-world-intro h2').textContent=session.mission.title;root.querySelector('.ray-world-intro p').textContent=session.mission.request;
+  if(!['gate','street','station'].includes(session.mission.id))root.querySelector('.ray-world-intro p:last-of-type').textContent='در این مأموریت، مسیرها ثابت‌اند. کنار قطعات برو: E تنظیم قطعه، M اندازه‌گیری. در انتخاب‌گر کوچک با ← → مقدار را انتخاب و با Enter نصب کن. F نتیجه را آزمایش می‌کند.';
+  this.onClick=e=>{const b=e.target.closest('[data-story-action]');if(b)onAction(b.dataset.storyAction);};root.addEventListener('click',this.onClick);this.dialog.addEventListener('cancel',e=>{e.preventDefault();this.closeDialog();});
  }
- message(text,tone='info'){this.fieldMessage.textContent=text;this.fieldMessage.dataset.tone=tone;}
- update(s,scene,tool,selected,nearest,intro,dt){super.update(s,scene,'hand',selected,nearest,9,dt);this.root.querySelector('.story-skip').hidden=true;this.quickStart.hidden=!s.started||this.openedDevice||this.deviceDialog.open;}
- openDevice(d){this.openedDevice=true;this.quickStart.hidden=true;this.deviceDialog.querySelector('h2').textContent=d.label;this.previousDeviceFocus=document.activeElement;if(!this.deviceDialog.open)this.deviceDialog.showModal();this.deviceDialog.querySelector('[data-story-action="device-close"]').focus({preventScroll:true});}
- closeDevice(){this.deviceDialog.close();this.previousDeviceFocus?.focus?.({preventScroll:true});}
- dispose(){this.closeDevice();super.dispose();}
+ message(text,tone='info'){const n=this.root.querySelector('.ray-world-status');n.textContent=text;n.dataset.tone=tone;n.hidden=!text;this.remaining=tone==='hint'?18:8;}
+ showDialog(html){this.root.querySelector('[data-dialog-content]').innerHTML=html;this.dialog.showModal();this.dialog.querySelector('button')?.focus();}
+ closeDialog(){if(this.dialog.open)this.dialog.close();}
+ update(state,scene,w){
+  this.stage.classList.toggle('story-playing',state.started);this.root.querySelector('.ray-world-intro').hidden=state.started;
+  const t=w.target(),target=this.root.querySelector('.ray-world-target');target.hidden=!state.started;
+  this.root.querySelector('[data-target-kind]').textContent=w.start?'در حال اتصال · سر اول در دست رِی':t?({part:'قطعه',pin:'پایانهٔ لحیم',wire:'مسیر مسی'})[t.type]:'حرکت آزاد';
+  this.root.querySelector('[data-target-label]').textContent=t?.label||'به مدار نزدیک شو';
+  this.root.querySelector('[data-context]').textContent=w.s.won?'تعمیر تأیید شد · N مأموریت بعد':t?.type==='pin'?(!w.canRewire?'مسیر ثابت است · M اندازه‌گیری · Q انتخاب خود قطعه':w.start?'E اتصال به این پایانه · Esc رها کردن':'E انتخاب سر سیم · M اندازه‌گیری'):t?.type==='wire'?'X برداشتن همین مسیر · Q انتخاب بعدی':t?.type==='part'?'E تنظیم قطعه · M اندازه‌گیری دو سر آن · Q انتخاب پایانه':'H یک سرنخ از وضعیت همین مدار';
+  const choice=this.root.querySelector('.ray-world-choice');choice.hidden=!w.choice;if(w.choice){choice.querySelector('[data-choice-title]').textContent=w.choice.device.label;choice.querySelector('output').textContent=w.choice.options[w.choice.index].label;}
+  const anchor=t&&scene.project(t.id);if(anchor&&w.choice){choice.style.left=Math.max(100,Math.min(scene.width-100,anchor.x))+'px';choice.style.top=Math.max(90,Math.min(this.stage.clientHeight-250,anchor.y+scene.host.offsetTop+35))+'px';}
+  const note=this.root.querySelector('.ray-world-note');note.hidden=!state.started||scene.mobile;
+  this.root.querySelector('[data-story-action="next"]').hidden=!w.s.won;this.root.querySelector('[data-story-action="cut"]').hidden=!w.canRewire;
+  const recovery=this.root.querySelector('[data-story-action="recover"]');recovery.hidden=!w.s.tripped;
+  const status=this.root.querySelector('.ray-world-status');this.remaining=(this.remaining||0)-.016;if(this.remaining<=0)status.hidden=true;
+ }
+ dispose(){this.closeDialog();this.root.removeEventListener('click',this.onClick);}
 }

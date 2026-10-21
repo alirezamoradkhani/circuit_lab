@@ -49,3 +49,36 @@
  .ray-quick-start strong{font-size:12px}
  .ray-keyboard-legend{display:none}
 }
+/* Physical circuit adventure. The lab and archived campaign styles remain scoped separately. */
+.ray-world-stage{background:#343f37;color:#ece1bf;min-height:0}
+.ray-world-stage button{font-family:Tahoma;font-size:11px;border:1px solid #a49b6e66;background:#293a30e8;color:#e8d9af;border-radius:7px;padding:7px 10px;min-height:34px;cursor:pointer}
+.ray-world-stage kbd{font:11px monospace;border:1px solid #b7a67377;border-radius:3px;padding:2px 4px;background:#405143;color:#f4e6bc;direction:ltr;white-space:nowrap}
+.ray-world-header{position:absolute;inset:15px 20px auto;display:flex;justify-content:space-between;align-items:start;gap:20px;direction:rtl;z-index:4;pointer-events:none}
+.ray-world-header>div{max-width:590px}.ray-world-header small{font-size:10px;color:#c0c4a5}.ray-world-header h1{margin:3px 0;font-size:21px;color:#eadcb4;line-height:1.5}.ray-world-header p{margin:0;font-size:12px;line-height:1.8;color:#d4d6b9}
+.ray-world-header nav{display:flex;gap:5px;pointer-events:auto}.ray-world-header button{display:flex;align-items:center;gap:5px}
+.ray-world-note{position:absolute;top:84px;left:20px;width:205px;padding:9px 12px;background:#293a30d9;border-inline-start:2px solid #b4a171;border-radius:3px;z-index:3;direction:rtl;pointer-events:none}
+.ray-world-note small{font-size:10px;color:#c9b883}.ray-world-note p{font-size:11px;line-height:1.9;margin:3px 0;color:#d7d8b8}
+.ray-world-target{position:absolute;bottom:91px;left:50%;transform:translateX(-50%);width:min(500px,82%);padding:8px 12px;background:#25362fe8;border:1px solid #8c957466;border-radius:7px;text-align:center;direction:rtl;z-index:4;pointer-events:none}
+.ray-world-target small{display:block;font-size:10px;color:#b6bf99}.ray-world-target strong{font-size:14px;color:#ead29b;line-height:1.8}.ray-world-target p{font-size:11px;line-height:1.7;margin:0;color:#d9dcba}
+.ray-world-status{position:absolute;bottom:185px;left:50%;transform:translateX(-50%);width:min(580px,82%);background:#344b3bf5;color:#f0e5bc;border-inline-start:3px solid #b7c098;padding:10px 13px;font:12px/1.9 Tahoma;direction:rtl;border-radius:5px;z-index:5;pointer-events:none;box-shadow:0 5px 20px #17221950}
+.ray-world-status[data-tone=error]{border-color:#c98562;color:#f4d1bc}.ray-world-status[data-tone=success]{border-color:#bfce8a;color:#e0e9ba}.ray-world-status[data-tone=hint]{border-color:#d8bf79;background:#3f4a32f5}
+.ray-world-choice{position:absolute;transform:translateX(-50%);width:228px;padding:10px;background:#ddd1ad;color:#303c31;border:1px solid #a98b57;border-radius:8px;z-index:6;box-shadow:0 8px 30px #16251e77;text-align:center;direction:rtl}
+.ray-world-choice>div{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:8px}.ray-world-choice output{font:12px/1.7 Tahoma;min-width:0}.ray-world-choice p{font:10px/1.7 Tahoma;margin:6px 0}.ray-world-choice>button{width:100%}
+.ray-world-footer{position:absolute;bottom:0;left:0;right:0;padding:8px 12px 5px;z-index:4;background:linear-gradient(transparent,#26382df2 25%);text-align:center;direction:rtl}
+.ray-world-footer nav{display:flex;justify-content:center;gap:5px;flex-wrap:wrap}.ray-world-footer button{display:flex;align-items:center;gap:6px;padding:5px 8px;min-height:32px}.ray-world-keyboard{margin:7px 0 0;font:10px/1.6 Tahoma;color:#bec8a9}
+.ray-world-intro{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);width:min(460px,88%);box-sizing:border-box;padding:22px;background:#293b30f5;border:1px solid #a2986a;border-radius:10px;z-index:7;text-align:right;direction:rtl;box-shadow:0 20px 90px #12241eaa}
+.ray-world-intro small{color:#ccba85;font-size:11px}.ray-world-intro h2{font-size:23px;margin:5px 0 10px}.ray-world-intro p{font:12px/2 Tahoma;color:#d3d8b9}.ray-world-intro>button{width:100%;background:#bfab70;color:#26362a;font-weight:bold}.ray-intro-path{display:flex;gap:6px;justify-content:space-between;font-size:10px;color:#d6bf80;border-top:1px solid #9da07b66;padding-top:12px}
+.ray-world-stage:not(.story-playing) :is(.ray-world-footer,.ray-world-target,.ray-world-note){display:none}
+.ray-world-stage .story-joystick{bottom:95px;left:18px;z-index:5}
+@media(max-width:700px){
+ .ray-world-header{inset:10px 10px auto;gap:8px}.ray-world-header h1{font-size:16px}.ray-world-header p{font-size:10px;max-width:74vw}.ray-world-header small{font-size:9px}.ray-world-header nav{flex-direction:column;gap:4px}.ray-world-header nav button{width:34px;height:32px;padding:4px;justify-content:center}.ray-world-header nav span{display:none}
+ .ray-world-footer{padding:5px}.ray-world-footer nav{gap:3px}.ray-world-footer button{padding:6px;min-height:38px;font-size:10px}.ray-world-footer button kbd{display:none}.ray-world-keyboard{display:none}.ray-world-target{bottom:98px;width:68%;left:auto;right:8px;transform:none;padding:5px 8px;box-sizing:border-box}.ray-world-target p{font-size:10px}.ray-world-target strong{font-size:12px}.ray-world-status{bottom:195px;width:86%;font-size:11px;padding:7px 10px}.ray-world-stage .story-joystick{left:10px;bottom:98px}.ray-world-choice{width:205px}.ray-world-intro{padding:17px}.ray-world-intro p{font-size:11px}
+}
+@media(max-height:500px){.ray-world-header{inset:8px 10px auto}.ray-world-header h1{font-size:15px}.ray-world-header p,.ray-world-note{display:none}.ray-world-target{bottom:65px;width:380px;padding:4px 8px}.ray-world-target small{display:none}.ray-world-target strong{font-size:12px}.ray-world-target p{font-size:10px}.ray-world-status{bottom:128px;font-size:11px;padding:6px 10px}.ray-world-footer button{min-height:30px;padding:4px 7px}.ray-world-keyboard{font-size:9px}.ray-world-stage .story-joystick{bottom:65px}.ray-world-intro{padding:12px;max-height:90%;overflow:auto}.ray-world-intro p{font-size:10px;line-height:1.7}}
+
+/* Keep feedback out of the playable area. */
+.ray-world-stage .story-world{top:80px;bottom:170px;height:auto}
+.ray-world-stage .story-world canvas:focus-visible{outline:none}
+.ray-world-stage .ray-world-status{bottom:174px;max-width:670px;padding:6px 12px;font-size:11px}
+@media(max-width:700px){.ray-world-stage .story-world{top:85px;bottom:205px}.ray-world-stage .ray-world-status{bottom:180px;font-size:10px;line-height:1.7;padding:6px 9px}.ray-world-target{bottom:98px}.ray-world-header p{max-width:79vw}}
+@media(max-height:500px){.ray-world-stage .story-world{top:40px;bottom:115px}.ray-world-stage .ray-world-status{bottom:112px;font-size:10px;max-width:620px}.ray-world-target{bottom:62px}}

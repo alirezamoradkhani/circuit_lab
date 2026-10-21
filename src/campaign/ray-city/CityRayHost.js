@@ -7,7 +7,7 @@ export class CityRayHost {
  constructor(root){this.root=root;this.game=null;this.active=false;this.sessions=new Map();this.index=0;this.generation=0;try{this.storage=window.localStorage;const index=Number(this.storage.getItem(KEY));if(Number.isInteger(index)&&index>=0&&index<adventures.length)this.index=index;}catch{}
   this.drafts=new CityDrafts(this.storage,'circuit-lab.ray-city.repairs.v1');this.progress=new CityProgress(this.storage,'circuit-lab.ray-city.completed.v1',adventures,{openAccess:true});
  }
- menu(){return '<h2>مأموریت‌های شهر روشن</h2><p>در هر محل، با رِی کنار دستگاه‌ها برو و مدار همان دستگاه را تعمیر کن.</p><div class="campaign-stage-list">'+adventures.map((m,i)=>'<button data-story-action="mission:'+i+'" '+(i===this.index?'aria-current="step"':'')+'><span>'+(i+1).toLocaleString('fa-IR')+'</span><b>'+m.title+'</b><small>'+m.skill+'</small></button>').join('')+'</div>';}
+ menu(){return '<h2>مأموریت‌های شهر روشن</h2><p>درون هر مدار حرکت کن؛ مسیرهای رسانا را پیدا کن، قطعات را اندازه بگیر و همان‌جا تعمیر کن.</p><div class="campaign-stage-list">'+adventures.map((m,i)=>'<button data-story-action="mission:'+i+'" '+(i===this.index?'aria-current="step"':'')+'><span>'+(i+1).toLocaleString('fa-IR')+'</span><b>'+m.title+'</b><small>'+m.skill+'</small></button>').join('')+'</div>';}
  async open(index,{fresh=false}={}){
   if(!adventures[index])return;const token=++this.generation;this.game?.dispose();this.game=null;this.index=index;this.root.innerHTML='<div class="story-loading">ورود به '+adventures[index].title+'…</div>';const {CityRayGame}=await import('./CityRayGame.js');if(token!==this.generation)return;
   if(fresh||!this.sessions.has(index))this.sessions.set(index,this.drafts.attach(new AdventureSession(index),{fresh}));
