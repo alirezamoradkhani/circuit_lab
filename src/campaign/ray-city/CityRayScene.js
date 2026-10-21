@@ -1,35 +1,38 @@
 import {WorkshopScene} from '../visual/WorkshopScene.js';
 import * as T from '../engine/three.js';
-import {box,cylinder,ball,rod,ring,group,mesh} from '../visual/shapes.js';
-import {plaque} from '../visual/materials.js';
+import {rod,ring,group,mesh} from '../visual/shapes.js';
+import {configureCircuitAppearance,substrateMaterial,plaque,box,cylinder,ball} from './CircuitAppearance.js';
 import {animateRobot} from '../visual/Robot.js';
 import {measurePart} from '../../city/ComponentMeter.js';
 import {routeTracks} from './WorldRoutes.js';
-const copper=['#b6a16a','#7a9a87','#b58058','#8697a0','#a8aa7c'];
+const copper=['#d8b779','#ce9e68','#ddc395','#b4bfb1','#bf9065'];
 export class CityRayScene extends WorkshopScene {
  constructor(host,world){
   super(host,{empty:true});this.world=world;this.partViews=new Map();this.terminalViews=new Map();this.connectionViews=[];this.key='';
-  this.scene.background=new T.Color('#343f37');this.renderer.domElement.setAttribute('aria-label','درون مدار؛ WASD حرکت، E تعامل، Q انتخاب، X قطع مسیر، M اندازه‌گیری');
+  configureCircuitAppearance(this);
+  this.scene.background=new T.Color('#314a40');this.renderer.domElement.setAttribute('aria-label','درون مدار؛ WASD حرکت، E تعامل، Q انتخاب، X قطع مسیر، M اندازه‌گیری');
   this.cameraOffset.set(0,10,8);this.cameraTarget.set(0,0,0);this.ray.root.scale.setScalar(.69);this.ray.root.userData.interaction=null;
   this.hintMarker=ring(this.scene,this.materials.brass.clone(),0,.11,0,.55,.025);this.hintMarker.rotation.x=-Math.PI/2;this.hintMarker.visible=false;this.floor=group(this.scene);this.floor.name='circuit-substrate';this.tracks=group(this.scene);this.preview=group(this.scene);this.build();this.resize();
  }
  resize(){
   this.width=this.host.clientWidth;this.height=this.host.clientHeight;if(!this.width||!this.height)return;
-  this.mobile=this.width<680;this.renderer.setSize(this.width,this.height,false);const aspect=this.width/this.height;
+  this.mobile=this.width<680;this.renderer.setPixelRatio(this.mobile?Math.min(devicePixelRatio||1,2):Math.max(1.4,Math.min(devicePixelRatio||1,2)));this.renderer.setSize(this.width,this.height,false);const aspect=this.width/this.height;
   const half=this.mobile&&!this.overview?3.1:Math.max(3.55,6.05/aspect);
   Object.assign(this.camera,{left:-half*aspect,right:half*aspect,top:half,bottom:-half});this.camera.updateProjectionMatrix();
  }
  label(parent,text,x,y,z,width=1.15,height=.26){const label=mesh(parent,new T.PlaneGeometry(width,height),plaque(text,'#a9aa88','#333f35',512,100),x,y,z);label.rotation.x=-Math.PI/2;label.castShadow=false;return label;}
  build(){
-  const m=this.materials,substrate=m.green.clone();substrate.color.set('#63705e');substrate.roughness=.97;box(this.floor,m.dark,0,-.23,0,28,.4,22);box(this.floor,substrate,0,-.005,0,28,.06,22);
+  const m=this.materials,substrate=substrateMaterial(this.renderer);box(this.floor,m.dark,0,-.23,0,28,.4,22);box(this.floor,substrate,0,-.005,0,28,.06,22);
   // A worn circuit substrate, without the previous room, furniture or schematic grid.
   for(const x of [-5.65,5.65])for(const z of [-3.7,3.7]){cylinder(this.floor,m.brass,x,.06,z,.1,.05);box(this.floor,m.ink,x,.089,z,.12,.008,.018);}
   for(let i=0;i<55;i++){const x=((i*37)%113)/10-5.5,z=((i*19)%73)/10-3.5;box(this.floor,m.dark,x,.028,z,.012,.002,.1+(i%5)*.025);}
   this.label(this.floor,'R–07   /   CIRCUIT SERVICE',0,.035,-3.65,2.9,.25);
-  const etch=m.blue.clone();etch.color.set('#566857');for(const x of [-5.2,5.2]){box(this.floor,etch,x,.03,0,.025,.003,6.7);for(let i=0;i<8;i++)box(this.floor,etch,x+(x>0?.12:-.12),.031,-3+i*.8,.24,.003,.018);}
+  const etch=m.blue.clone();etch.color.set('#67816d');for(const x of [-5.2,5.2]){box(this.floor,etch,x,.03,0,.025,.003,6.7);for(let i=0;i<8;i++)box(this.floor,etch,x+(x>0?.12:-.12),.031,-3+i*.8,.24,.003,.018);}
   for(const d of this.world.parts){
    const p=d.part,g=group(this.floor,'part:'+d.id);g.position.set(d.position.x,.045,d.position.z);
-   box(g,m.dark,0,.06,0,1.3,.09,.94);let light=null,lever=null;
+   box(g,m.dark,0,.06,0,1.3,.09,.94);
+   for(const x of [-.53,.53])for(const z of [-.34,.34]){cylinder(g,m.brass,x,.115,z,.034,.014);box(g,m.ink,x,.124,z,.038,.005,.009);}
+   let light=null,lever=null;
    if(p.type==='battery'){
     for(const x of [-.19,.19]){cylinder(g,m.blue,x,.31,0,.18,.48);cylinder(g,m.brass,x,.56,0,.11,.04);}
     this.label(g,'+     12 V     −',0,.09,-.55,1.25,.21);
