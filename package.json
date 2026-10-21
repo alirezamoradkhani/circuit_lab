@@ -5,11 +5,11 @@
   "description": "Electric circuit lessons and a story-driven 3D puzzle adventure",
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/ray-city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/urban-site.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/city-schematics.test.mjs && node tests/infrastructure.test.mjs && node tests/city-drafts.test.mjs && node tests/workshop.test.mjs && node tests/workshop-repair.test.mjs && node tests/workshop-hints.test.mjs && node tests/components.test.mjs && node tests/component-engine.test.mjs && npm run test:campaign",
+    "test": "node tests/builder.test.mjs && node tests/lessons.test.mjs && node tests/wire-removal.test.mjs && node tests/city.test.mjs && node tests/ray-city.test.mjs && node tests/adventure.test.mjs && node tests/shop.test.mjs && node tests/street.test.mjs && node tests/city-ui.test.mjs && node tests/urban-site.test.mjs && node tests/component-meter.test.mjs && node tests/challenges.test.mjs && node tests/city-schematics.test.mjs && node tests/infrastructure.test.mjs && node tests/city-drafts.test.mjs && node tests/workshop.test.mjs && node tests/workshop-repair.test.mjs && node tests/workshop-hints.test.mjs && node tests/components.test.mjs && node tests/component-engine.test.mjs && node tests/physical-circuit.test.mjs && npm run test:campaign",
     "vendor": "node scripts/vendor-three.mjs",
     "test:navigation:browser": "node tests/game-navigation.browser.mjs",
-    "test:ray-city:shop": "node tests/ray-city-shop.browser.mjs",
-    "test:ray-city:browser": "node tests/ray-city.browser.mjs",
+    "test:ray-city:shop": "node tests/physical-circuit.browser.mjs",
+    "test:ray-city:browser": "node tests/physical-circuit.browser.mjs",
     "test:repair:browser": "node tests/workshop-repair.browser.mjs",
     "test:browser": "node tests/workshop.browser.mjs",
     "test:components": "node tests/components.test.mjs && node tests/component-engine.test.mjs",
@@ -19,8 +19,10 @@
     "test:city:browser": "node tests/operations.browser.mjs && node tests/city-schematics.browser.mjs",
     "test:market:browser": "node tests/market.browser.mjs",
     "test:readability:browser": "node tests/readability.browser.mjs",
-    "test:ray-city:controls": "node tests/ray-device-controls.browser.mjs",
-    "test:ray-city:keyboard": "node tests/ray-city-keyboard.browser.mjs"
+    "test:ray-city:controls": "node tests/physical-circuit.browser.mjs",
+    "test:ray-city:keyboard": "node tests/physical-circuit.browser.mjs",
+    "test:physical-circuit": "node tests/physical-circuit.test.mjs",
+    "test:physical-circuit:browser": "node tests/physical-circuit.browser.mjs"
   },
   "type": "module",
   "dependencies": {
