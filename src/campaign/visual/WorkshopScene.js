@@ -8,7 +8,7 @@ import {pipe,ring} from './shapes.js';
 import {cartPosition,portPosition,interactionPosition} from '../workshop/layout.js';
 import {powered} from '../workshop/electricity.js';
 export class WorkshopScene {
-  constructor(host){
+  constructor(host,{empty=false}={}){
     this.host=host;this.scene=new T.Scene();this.scene.background=new T.Color('#72796b');
     this.renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
@@ -18,9 +18,9 @@ export class WorkshopScene {
     this.renderer.domElement.tabIndex=0;host.prepend(this.renderer.domElement);
     this.camera=new T.OrthographicCamera(-10,10,7,-7,.1,100);this.cameraOffset=new T.Vector3(8,13,19);
     this.cameraTarget=new T.Vector3(0,1,-.3);this.raycaster=new T.Raycaster();this.plane=new T.Plane(new T.Vector3(0,1,0),0);
-    this.materials=makeMaterials();this.room=buildRoom(this.scene,this.materials);this.props=buildProps(this.scene,this.materials);
+    this.materials=makeMaterials();this.room=empty?null:buildRoom(this.scene,this.materials);this.props=empty?{}:buildProps(this.scene,this.materials);
     this.indicators=[];this.scene.traverse(o=>{if(o.userData.powerIndicator)this.indicators.push(o);});
-    this.ray=characterAsset(this.scene,this.materials,{id:'ray',kind:'Actor',config:{}});this.pakro=characterAsset(this.scene,this.materials,{id:'pakro',kind:'Companion',config:{}});
+    this.ray=characterAsset(this.scene,this.materials,{id:'ray',kind:'Actor',config:{}});this.pakro=empty?null:characterAsset(this.scene,this.materials,{id:'pakro',kind:'Companion',config:{}});
     this.scene.add(new T.HemisphereLight('#e4e5cc','#555246',2.7));
     const sun=new T.DirectionalLight('#ffe0a7',3.0);sun.position.set(-5,9,5);sun.castShadow=true;
     Object.assign(sun.shadow.camera,{left:-10,right:10,top:9,bottom:-9,near:.1,far:35});

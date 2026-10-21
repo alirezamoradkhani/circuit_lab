@@ -19,7 +19,7 @@ export class Movement {
     if(Math.hypot(x,y)>.12){
       this.path=[];this.arrive=null;
       const length=Math.max(1,Math.hypot(x,y));x/=length;y/=length;
-      dx=(.922*x+.388*y)*amount;dz=(-.388*x+.922*y)*amount;
+      if(this.game.movementAxes==='screen'){dx=x*amount;dz=y*amount;}else{dx=(.922*x+.388*y)*amount;dz=(-.388*x+.922*y)*amount;}
     }else if(this.path.length){
       const next=this.path[0],d=distance(s.player,next);
       if(d<.075){this.path.shift();if(!this.path.length){const fn=this.arrive;this.arrive=null;fn?.();}return;}
